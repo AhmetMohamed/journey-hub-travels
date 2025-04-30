@@ -1,18 +1,50 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "@/components/ui/sonner";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 const Login = () => {
-  const handleSubmit = (e: React.FormEvent) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // This would connect to your backend API
-    console.log("Login submitted");
+    setIsLoading(true);
+
+    try {
+      // This would connect to your backend API
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Store token in localStorage
+        localStorage.setItem('token', data.token);
+        toast.success("Login successful!");
+        navigate('/');
+      } else {
+        toast.error(data.message || "Login failed. Please check your credentials.");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error("Something went wrong. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -32,7 +64,14 @@ const Login = () => {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="john.doe@example.com" required />
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      placeholder="john.doe@example.com" 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required 
+                    />
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -41,9 +80,17 @@ const Login = () => {
                         Forgot password?
                       </Link>
                     </div>
-                    <Input id="password" type="password" required />
+                    <Input 
+                      id="password" 
+                      type="password" 
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required 
+                    />
                   </div>
-                  <Button type="submit" className="w-full">Sign in</Button>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? "Signing in..." : "Sign in"}
+                  </Button>
                 </div>
               </form>
               
