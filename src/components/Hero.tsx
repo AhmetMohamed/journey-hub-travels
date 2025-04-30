@@ -4,17 +4,33 @@ import { MapPin, Calendar, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
 
 const Hero: React.FC = () => {
   const [departure, setDeparture] = useState("");
   const [destination, setDestination] = useState("");
   const [date, setDate] = useState("");
   const [passengers, setPassengers] = useState("1");
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ departure, destination, date, passengers });
-    // In a real app, this would navigate to search results
+    
+    // Form validation
+    if (!departure.trim() || !destination.trim() || !date.trim()) {
+      toast({
+        title: "Missing information",
+        description: "Please fill out all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // In a real app, this would call an API endpoint
+    // We'll redirect to schedules page with query parameters
+    navigate(`/schedules?from=${departure}&to=${destination}&date=${date}&passengers=${passengers}`);
   };
 
   return (

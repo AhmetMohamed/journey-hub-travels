@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,17 +8,81 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useToast } from "@/components/ui/use-toast";
+import { Loader } from "lucide-react";
+
+// Function to parse query parameters
+const useQuery = () => {
+  return new URLSearchParams(useLocation().search);
+};
+
+// API client function (would connect to your backend in production)
+const fetchSchedules = async (from: string, to: string, date: string) => {
+  // This is just a mock API call
+  // In a real app, this would call your backend API
+  return new Promise<any[]>((resolve) => {
+    setTimeout(() => {
+      resolve(schedules.filter(schedule => 
+        schedule.from.toLowerCase().includes(from.toLowerCase()) && 
+        schedule.to.toLowerCase().includes(to.toLowerCase())
+      ));
+    }, 500);
+  });
+};
 
 const Schedules = () => {
-  const [fromCity, setFromCity] = useState('');
-  const [toCity, setToCity] = useState('');
-  const [date, setDate] = useState('');
+  const query = useQuery();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  const [fromCity, setFromCity] = useState(query.get('from') || '');
+  const [toCity, setToCity] = useState(query.get('to') || '');
+  const [date, setDate] = useState(query.get('date') || '');
+  const [passengers, setPassengers] = useState(query.get('passengers') || '1');
   const [searchPerformed, setSearchPerformed] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<any[]>([]);
 
-  const handleSearch = (e: React.FormEvent) => {
+  // Check if we have query parameters and perform search automatically
+  useEffect(() => {
+    if (fromCity && toCity && date) {
+      handleSearch(new Event('submit') as any);
+    }
+  }, []);
+
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!fromCity || !toCity || !date) {
+      toast({
+        title: "Missing information",
+        description: "Please fill out all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setLoading(true);
     setSearchPerformed(true);
-    // This would connect to your backend API to get actual schedules
+    
+    try {
+      // Update URL with search parameters without reloading
+      navigate(`/schedules?from=${fromCity}&to=${toCity}&date=${date}&passengers=${passengers}`, { replace: true });
+      
+      // Call API (mock or real)
+      const data = await fetchSchedules(fromCity, toCity, date);
+      setResults(data);
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch schedules. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Demo data for schedules - this would come from your API
@@ -77,8 +141,47 @@ const Schedules = () => {
       price: "$55",
       busType: "Premium",
       availableSeats: 12
+    },
+    {
+      id: 6,
+      from: "Chicago",
+      to: "Milwaukee",
+      departureTime: "06:30 AM",
+      arrivalTime: "08:15 AM",
+      duration: "1h 45m",
+      price: "$25",
+      busType: "Express",
+      availableSeats: 18
+    },
+    {
+      id: 7,
+      from: "Los Angeles",
+      to: "San Diego",
+      departureTime: "08:00 AM",
+      arrivalTime: "10:15 AM",
+      duration: "2h 15m",
+      price: "$30",
+      busType: "Premium",
+      availableSeats: 22
     }
   ];
+
+  // For real API fetching, you would use:
+  /*
+  const fetchSchedules = async () => {
+    try {
+      const response = await fetch(`${API_URL}/schedules?from=${fromCity}&to=${toCity}&date=${date}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching schedules:', error);
+      throw error;
+    }
+  };
+  */
 
   return (
     <div className="min-h-screen">
@@ -166,7 +269,16 @@ const Schedules = () => {
                     </RadioGroup>
                   </div>
                   
-                  <Button type="submit" className="w-full mt-6">Search Schedules</Button>
+                  <Button type="submit" className="w-full mt-6" disabled={loading}>
+                    {loading ? (
+                      <>
+                        <Loader className="mr-2 h-4 w-4 animate-spin" />
+                        Searching...
+                      </>
+                    ) : (
+                      'Search Schedules'
+                    )}
+                  </Button>
                 </form>
               </CardContent>
             </Card>
@@ -182,67 +294,71 @@ const Schedules = () => {
               </h2>
               
               <div className="space-y-4">
-                {schedules.map(schedule => (
-                  <Card key={schedule.id} className="overflow-hidden">
-                    <div className="h-1 bg-bus-800"></div>
-                    <CardContent className="p-0">
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div className="bg-gray-50 p-6 flex flex-col justify-center items-center">
-                          <span className="text-sm text-muted-foreground">Departure</span>
-                          <span className="text-2xl font-bold">{schedule.departureTime}</span>
-                          <span className="text-sm mt-2">{schedule.from}</span>
-                        </div>
-                        
-                        <div className="p-6 flex flex-col justify-center">
-                          <span className="text-sm text-muted-foreground">Duration</span>
-                          <span className="font-medium">{schedule.duration}</span>
-                          <div className="flex items-center mt-2">
-                            <div className="h-0.5 flex-grow bg-gray-300"></div>
-                            <span className="mx-2 text-xs text-muted-foreground">Direct</span>
-                            <div className="h-0.5 flex-grow bg-gray-300"></div>
+                {loading ? (
+                  <div className="flex justify-center py-12">
+                    <Loader className="h-8 w-8 animate-spin text-bus-800" />
+                  </div>
+                ) : results.length > 0 ? (
+                  results.map(schedule => (
+                    <Card key={schedule.id} className="overflow-hidden">
+                      <div className="h-1 bg-bus-800"></div>
+                      <CardContent className="p-0">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                          <div className="bg-gray-50 p-6 flex flex-col justify-center items-center">
+                            <span className="text-sm text-muted-foreground">Departure</span>
+                            <span className="text-2xl font-bold">{schedule.departureTime}</span>
+                            <span className="text-sm mt-2">{schedule.from}</span>
                           </div>
-                        </div>
-                        
-                        <div className="bg-gray-50 p-6 flex flex-col justify-center items-center">
-                          <span className="text-sm text-muted-foreground">Arrival</span>
-                          <span className="text-2xl font-bold">{schedule.arrivalTime}</span>
-                          <span className="text-sm mt-2">{schedule.to}</span>
-                        </div>
-                        
-                        <div className="p-6 flex flex-col justify-between items-center border-t md:border-t-0 md:border-l border-gray-100">
-                          <div className="text-center mb-2">
-                            <span className="text-2xl font-bold text-bus-800">{schedule.price}</span>
-                            <div className="text-sm text-muted-foreground">{schedule.busType}</div>
-                            <div className="text-xs mt-1">
-                              {schedule.availableSeats} seats available
+                          
+                          <div className="p-6 flex flex-col justify-center">
+                            <span className="text-sm text-muted-foreground">Duration</span>
+                            <span className="font-medium">{schedule.duration}</span>
+                            <div className="flex items-center mt-2">
+                              <div className="h-0.5 flex-grow bg-gray-300"></div>
+                              <span className="mx-2 text-xs text-muted-foreground">Direct</span>
+                              <div className="h-0.5 flex-grow bg-gray-300"></div>
                             </div>
                           </div>
-                          <Button className="w-full">Book Now</Button>
-                        </div>
-                      </div>
-                      
-                      <div className="p-4 bg-gray-50 border-t border-gray-100 text-sm">
-                        <div className="flex justify-between">
-                          <div>
-                            <span className="text-muted-foreground">Amenities:</span>
-                            <span className="ml-2">WiFi, Power outlets, Air conditioning</span>
+                          
+                          <div className="bg-gray-50 p-6 flex flex-col justify-center items-center">
+                            <span className="text-sm text-muted-foreground">Arrival</span>
+                            <span className="text-2xl font-bold">{schedule.arrivalTime}</span>
+                            <span className="text-sm mt-2">{schedule.to}</span>
                           </div>
-                          <Button variant="link" size="sm" className="text-bus-800">
-                            Details
-                          </Button>
+                          
+                          <div className="p-6 flex flex-col justify-between items-center border-t md:border-t-0 md:border-l border-gray-100">
+                            <div className="text-center mb-2">
+                              <span className="text-2xl font-bold text-bus-800">{schedule.price}</span>
+                              <div className="text-sm text-muted-foreground">{schedule.busType}</div>
+                              <div className="text-xs mt-1">
+                                {schedule.availableSeats} seats available
+                              </div>
+                            </div>
+                            <Button className="w-full">Book Now</Button>
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                        
+                        <div className="p-4 bg-gray-50 border-t border-gray-100 text-sm">
+                          <div className="flex justify-between">
+                            <div>
+                              <span className="text-muted-foreground">Amenities:</span>
+                              <span className="ml-2">WiFi, Power outlets, Air conditioning</span>
+                            </div>
+                            <Button variant="link" size="sm" className="text-bus-800">
+                              Details
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-xl text-muted-foreground">No schedules found for your search criteria.</p>
+                    <p className="mt-2">Try different dates or locations.</p>
+                  </div>
+                )}
               </div>
-              
-              {schedules.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-xl text-muted-foreground">No schedules found for your search criteria.</p>
-                  <p className="mt-2">Try different dates or locations.</p>
-                </div>
-              )}
             </div>
           </section>
         )}

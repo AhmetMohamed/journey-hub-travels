@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Search, Map, Clock, Calendar } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 // This is demo data that would be fetched from your backend
 const routesData = [
@@ -104,6 +105,7 @@ const routesData = [
 const Routes = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredRoutes, setFilteredRoutes] = useState(routesData);
+  const navigate = useNavigate();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,6 +116,15 @@ const Routes = () => {
     );
     
     setFilteredRoutes(filtered);
+  };
+
+  const handleViewSchedule = (from: string, to: string) => {
+    // Get tomorrow's date in YYYY-MM-DD format
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const formattedDate = tomorrow.toISOString().split('T')[0];
+    
+    navigate(`/schedules?from=${from}&to=${to}&date=${formattedDate}&passengers=1`);
   };
 
   return (
@@ -189,7 +200,12 @@ const Routes = () => {
                         </div>
                       </div>
                       
-                      <Button className="w-full mt-6">View Schedule</Button>
+                      <Button 
+                        className="w-full mt-6"
+                        onClick={() => handleViewSchedule(route.from, route.to)}
+                      >
+                        View Schedule
+                      </Button>
                     </CardContent>
                   </Card>
                 ))}
@@ -254,8 +270,13 @@ const Routes = () => {
                         </div>
                         
                         <div className="flex gap-2 mt-4">
-                          <Button>Book Now</Button>
-                          <Button variant="outline">View Details</Button>
+                          <Button onClick={() => handleViewSchedule(route.from, route.to)}>Book Now</Button>
+                          <Button 
+                            variant="outline"
+                            onClick={() => handleViewSchedule(route.from, route.to)}
+                          >
+                            View Details
+                          </Button>
                         </div>
                       </div>
                       {idx < filteredRoutes.length - 1 && <Separator className="my-4" />}

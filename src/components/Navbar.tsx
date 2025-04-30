@@ -1,14 +1,30 @@
 
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { Menu, X, User, Search, Bus } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Menu, X, User, Search, Bus, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
   };
 
   return (
@@ -38,6 +54,11 @@ const Navbar: React.FC = () => {
           <Link to="/contact" className="text-sm font-medium hover:text-bus-800 transition-colors">
             Contact
           </Link>
+          {isAuthenticated && user?.role === 'admin' && (
+            <Link to="/admin" className="text-sm font-medium hover:text-bus-800 transition-colors">
+              Admin
+            </Link>
+          )}
         </nav>
 
         {/* Desktop Action Buttons */}
@@ -46,10 +67,38 @@ const Navbar: React.FC = () => {
             <Search className="h-4 w-4" />
             <span>Search</span>
           </Button>
-          <Button className="bg-bus-800 hover:bg-bus-700 text-white">
-            <User className="mr-2 h-4 w-4" />
-            <span>Sign In</span>
-          </Button>
+          
+          {isAuthenticated ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="bg-bus-800 hover:bg-bus-700 text-white">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>{user?.firstName || 'User'}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Profile</DropdownMenuItem>
+                <DropdownMenuItem>Bookings</DropdownMenuItem>
+                {user?.role === 'admin' && (
+                  <DropdownMenuItem onClick={() => navigate('/admin')}>
+                    Admin Dashboard
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button className="bg-bus-800 hover:bg-bus-700 text-white" onClick={() => navigate('/login')}>
+              <User className="mr-2 h-4 w-4" />
+              <span>Sign In</span>
+            </Button>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -100,16 +149,45 @@ const Navbar: React.FC = () => {
               >
                 Contact
               </Link>
+              {isAuthenticated && user?.role === 'admin' && (
+                <Link
+                  to="/admin"
+                  className="text-lg font-medium hover:text-bus-800 transition-colors"
+                  onClick={toggleMenu}
+                >
+                  Admin
+                </Link>
+              )}
 
               <div className="flex flex-col gap-4 mt-4">
                 <Button variant="outline" className="w-full justify-start">
                   <Search className="mr-2 h-4 w-4" />
                   <span>Search</span>
                 </Button>
-                <Button className="w-full bg-bus-800 hover:bg-bus-700 justify-start">
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Sign In</span>
-                </Button>
+                
+                {isAuthenticated ? (
+                  <Button 
+                    className="w-full bg-red-600 hover:bg-red-700 justify-start"
+                    onClick={() => {
+                      handleLogout();
+                      toggleMenu();
+                    }}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Logout</span>
+                  </Button>
+                ) : (
+                  <Button 
+                    className="w-full bg-bus-800 hover:bg-bus-700 justify-start"
+                    onClick={() => {
+                      navigate('/login');
+                      toggleMenu();
+                    }}
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Sign In</span>
+                  </Button>
+                )}
               </div>
             </nav>
           </div>
