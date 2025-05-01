@@ -1,3 +1,4 @@
+
 import React from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import {
@@ -7,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { BarChart, PieChart, LineChart } from "recharts";
+import { BarChart, PieChart, LineChart } from "@/components/ui/chart";
 import { useAuth } from "@/contexts/AuthContext";
 
 const AdminDashboard = () => {
@@ -127,7 +128,6 @@ const AdminDashboard = () => {
             <CardContent className="h-80">
               <BarChart
                 data={revenueData}
-                index="name"
                 categories={["value"]}
                 colors={["#8B5CF6"]}
                 valueFormatter={(value) => `$${value.toLocaleString()}`}
@@ -146,7 +146,6 @@ const AdminDashboard = () => {
             <CardContent className="h-80">
               <LineChart
                 data={bookingsTrendData}
-                index="name"
                 categories={["value"]}
                 colors={["#10B981"]}
                 valueFormatter={(value) => `${value} bookings`}
@@ -165,7 +164,6 @@ const AdminDashboard = () => {
             <CardContent className="h-80">
               <BarChart
                 data={routeUsageData}
-                index="name"
                 categories={["value"]}
                 colors={["#F59E0B"]}
                 valueFormatter={(value) => `${value} bookings`}
@@ -182,7 +180,6 @@ const AdminDashboard = () => {
             <CardContent className="h-80 flex items-center justify-center">
               <PieChart
                 data={busTypeData}
-                index="name"
                 categories={["value"]}
                 colors={["#6B7280", "#8B5CF6", "#10B981"]}
                 valueFormatter={(value) => `${value}%`}

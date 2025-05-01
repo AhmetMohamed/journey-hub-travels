@@ -354,20 +354,18 @@ function getPayloadConfigFromPayload(
     : config[key as keyof typeof config]
 }
 
-// New chart component implementations that we need
+// Fixed chart component implementations that match the recharts API
 export const BarChart = ({ 
   data, 
-  index, 
   categories, 
   colors, 
   valueFormatter,
-  layout = "vertical",
+  layout = "horizontal",
   yAxisWidth,
   className,
   ...props 
 }: { 
   data: any[];
-  index: string;
   categories: string[];
   colors?: string[];
   valueFormatter?: (value: number) => string;
@@ -389,7 +387,7 @@ export const BarChart = ({
         {layout === "horizontal" ? (
           <>
             <RechartsPrimitive.XAxis 
-              dataKey={index} 
+              dataKey="name" 
               type="category" 
               scale="band"
             />
@@ -405,7 +403,7 @@ export const BarChart = ({
               tickFormatter={valueFormatter}
             />
             <RechartsPrimitive.YAxis 
-              dataKey={index} 
+              dataKey="name" 
               type="category" 
               scale="band" 
               width={yAxisWidth}
@@ -433,7 +431,6 @@ export const BarChart = ({
 
 export const LineChart = ({ 
   data, 
-  index, 
   categories, 
   colors, 
   valueFormatter,
@@ -442,7 +439,6 @@ export const LineChart = ({
   ...props 
 }: { 
   data: any[];
-  index: string;
   categories: string[];
   colors?: string[];
   valueFormatter?: (value: number) => string;
@@ -460,7 +456,7 @@ export const LineChart = ({
       >
         <RechartsPrimitive.CartesianGrid strokeDasharray="3 3" />
         <RechartsPrimitive.XAxis 
-          dataKey={index}
+          dataKey="name"
           type="category"
         />
         <RechartsPrimitive.YAxis 
@@ -490,7 +486,6 @@ export const LineChart = ({
 
 export const PieChart = ({ 
   data, 
-  index, 
   categories, 
   colors, 
   valueFormatter,
@@ -498,7 +493,6 @@ export const PieChart = ({
   ...props 
 }: { 
   data: any[];
-  index: string;
   categories: string[];
   colors?: string[];
   valueFormatter?: (value: number) => string;
