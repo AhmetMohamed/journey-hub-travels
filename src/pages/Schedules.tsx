@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useToast } from "@/components/ui/use-toast";
-import { schedulesApi } from '@/services/api';
+import { schedulesApi } from '@/services';
 import { formatDate, formatTime } from '@/lib/utils/dateUtils';
 
 interface Schedule {

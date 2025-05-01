@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -10,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Search, Map, Clock, Calendar } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { routesApi } from '@/services/api';
+import { routesApi } from '@/services';
 
 interface Route {
   id: number;

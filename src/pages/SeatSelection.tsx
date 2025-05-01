@@ -14,7 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Check } from 'lucide-react';
-import { schedulesApi, bookingsApi } from '@/services/api';
+import { schedulesApi, bookingsApi } from '@/services';
 import { formatTime, formatDate } from '@/lib/utils/dateUtils';
 
 interface Seat {

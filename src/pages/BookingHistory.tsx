@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { CalendarDays, MapPin, AlertCircle } from 'lucide-react';
-import { bookingsApi } from '@/services/api';
+import { bookingsApi } from '@/services';
 import { formatDate, formatTime } from '@/lib/utils/dateUtils';
 
 interface Booking {

@@ -1,0 +1,69 @@
+
+import { toast } from "@/components/ui/use-toast";
+import { API_BASE_URL, handleResponse, getAuthHeader } from './apiUtils';
+
+export const reportsApi = {
+  generateReport: async (reportType: string, dateRange: string, customDates?: { startDate: string, endDate: string }) => {
+    try {
+      let url = `${API_BASE_URL}/api/reports/${reportType}?dateRange=${dateRange}`;
+      
+      if (dateRange === 'custom' && customDates) {
+        url += `&startDate=${customDates.startDate}&endDate=${customDates.endDate}`;
+      }
+      
+      const response = await fetch(url, {
+        headers: getAuthHeader()
+      });
+      return await handleResponse(response);
+    } catch (error) {
+      console.error('Error generating report:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to generate report. Please try again.',
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  },
+  
+  downloadReport: async (reportType: string, dateRange: string, format: string = 'csv', customDates?: { startDate: string, endDate: string }) => {
+    try {
+      let url = `${API_BASE_URL}/api/reports/${reportType}/download?format=${format}&dateRange=${dateRange}`;
+      
+      if (dateRange === 'custom' && customDates) {
+        url += `&startDate=${customDates.startDate}&endDate=${customDates.endDate}`;
+      }
+      
+      const response = await fetch(url, {
+        headers: getAuthHeader()
+      });
+      
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({
+          message: 'An unknown error occurred'
+        }));
+        throw new Error(error.message || `Error: ${response.status}`);
+      }
+      
+      // For file download
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `${reportType}-report.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      return true;
+    } catch (error) {
+      console.error('Error downloading report:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to download report. Please try again.',
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  }
+};
