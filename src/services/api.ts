@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 
 // Mock API implementation
@@ -329,21 +328,21 @@ export const routesApi = {
 
 // Schedules API
 export const schedulesApi = {
-  getAllSchedules: async (params = {}) => {
+  getAllSchedules: async (params: Record<string, any> = {}) => {
     try {
       if (useMockApi) {
         // Filter mock schedules based on params
         let filteredSchedules = [...mockSchedules];
         
-        if (params.hasOwnProperty('origin')) {
+        if (params.origin) {
           filteredSchedules = filteredSchedules.filter(s => 
-            s.route.origin.toLowerCase().includes((params.origin as string).toLowerCase())
+            s.route.origin.toLowerCase().includes(params.origin.toLowerCase())
           );
         }
         
-        if (params.hasOwnProperty('destination')) {
+        if (params.destination) {
           filteredSchedules = filteredSchedules.filter(s => 
-            s.route.destination.toLowerCase().includes((params.destination as string).toLowerCase())
+            s.route.destination.toLowerCase().includes(params.destination.toLowerCase())
           );
         }
         
