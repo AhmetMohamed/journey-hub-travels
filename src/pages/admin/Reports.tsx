@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart, LineChart } from '@/components/ui/chart';
 import { useToast } from '@/components/ui/use-toast';
-import { Calendar, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { reportsApi } from '@/services/api';
 
 interface ReportData {
