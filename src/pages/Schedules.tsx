@@ -8,18 +8,24 @@ import { Badge } from "@/components/ui/badge";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useToast } from "@/components/ui/use-toast";
+import { schedulesApi } from '@/services/api';
+import { formatDate, formatTime } from '@/lib/utils/dateUtils';
 
 interface Schedule {
-  id: string;
+  _id: string;
   route: {
-    from: string;
-    to: string;
+    name: string;
+    origin: string;
+    destination: string;
+    distance: number;
+    estimatedDuration: number;
   };
   departureTime: string;
   arrivalTime: string;
   price: number;
-  busType: string;
+  bus: string;
   availableSeats: number;
+  totalSeats: number;
 }
 
 const Schedules: React.FC = () => {
@@ -27,7 +33,7 @@ const Schedules: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryParams = new URLSearchParams(location.search);
-  const [scheduleData, setScheduleData] = useState<Schedule[]>([]);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
@@ -41,68 +47,14 @@ const Schedules: React.FC = () => {
   const fetchSchedules = async (from: string, to: string, date: string) => {
     setLoading(true);
     try {
-      // Real API call (commented out for now)
-      // const response = await fetch(`/api/schedules?from=${from}&to=${to}&date=${date}`);
-      // if (!response.ok) {
-      //   throw new Error('Failed to fetch schedules');
-      // }
-      // const data = await response.json();
-      // setScheduleData(data);
+      // Create params object for API call
+      const params: Record<string, string> = {};
+      if (from) params.origin = from;
+      if (to) params.destination = to;
+      if (date) params.date = date;
       
-      // For development, using mock data
-      setTimeout(() => {
-        setScheduleData([
-          {
-            id: "sch1",
-            route: {
-              from: from || "New York",
-              to: to || "Boston"
-            },
-            departureTime: "08:00 AM",
-            arrivalTime: "12:30 PM",
-            price: 45.99,
-            busType: "Express",
-            availableSeats: 23
-          },
-          {
-            id: "sch2",
-            route: {
-              from: from || "New York",
-              to: to || "Boston"
-            },
-            departureTime: "10:15 AM",
-            arrivalTime: "02:45 PM",
-            price: 39.99,
-            busType: "Standard",
-            availableSeats: 31
-          },
-          {
-            id: "sch3",
-            route: {
-              from: from || "New York",
-              to: to || "Boston"
-            },
-            departureTime: "12:30 PM",
-            arrivalTime: "05:00 PM",
-            price: 42.99,
-            busType: "Express",
-            availableSeats: 15
-          },
-          {
-            id: "sch4",
-            route: {
-              from: from || "New York",
-              to: to || "Boston"
-            },
-            departureTime: "03:45 PM",
-            arrivalTime: "08:15 PM",
-            price: 52.99,
-            busType: "Premium",
-            availableSeats: 8
-          }
-        ]);
-        setLoading(false);
-      }, 1000);
+      const data = await schedulesApi.getAllSchedules(params);
+      setSchedules(data);
     } catch (error) {
       console.error("Error fetching schedules:", error);
       toast({
@@ -110,8 +62,20 @@ const Schedules: React.FC = () => {
         description: "Failed to load schedules. Please try again.",
         variant: "destructive"
       });
+    } finally {
       setLoading(false);
     }
+  };
+  
+  const calculateTravelTime = (departure: string, arrival: string): string => {
+    const departureDate = new Date(departure);
+    const arrivalDate = new Date(arrival);
+    const diffInMinutes = Math.floor((arrivalDate.getTime() - departureDate.getTime()) / 60000);
+    
+    const hours = Math.floor(diffInMinutes / 60);
+    const minutes = diffInMinutes % 60;
+    
+    return `${hours}h ${minutes}m`;
   };
   
   const getBusTypeColor = (type: string) => {
@@ -146,7 +110,6 @@ const Schedules: React.FC = () => {
               </p>
             )}
           </div>
-          {/* Filter button could go here */}
         </div>
         
         {loading ? (
@@ -154,10 +117,10 @@ const Schedules: React.FC = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
           </div>
         ) : (
-          scheduleData.length > 0 ? (
+          schedules.length > 0 ? (
             <div className="grid gap-6">
-              {scheduleData.map((schedule) => (
-                <Card key={schedule.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              {schedules.map((schedule) => (
+                <Card key={schedule._id} className="overflow-hidden hover:shadow-lg transition-shadow">
                   <CardContent className="p-0">
                     <div className="flex flex-col md:flex-row">
                       {/* Time and Route Information */}
@@ -166,31 +129,31 @@ const Schedules: React.FC = () => {
                           <div className="mb-4 md:mb-0">
                             <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
                               <Calendar className="h-4 w-4" />
-                              <span>{queryParams.get('date') || "Today"}</span>
+                              <span>{formatDate(schedule.departureTime)}</span>
                             </div>
                             <div className="flex items-baseline gap-3">
-                              <span className="text-2xl font-bold">{schedule.departureTime}</span>
+                              <span className="text-2xl font-bold">{formatTime(schedule.departureTime)}</span>
                               <div className="flex-grow border-t border-dashed border-gray-300 mx-2 relative">
                                 <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-white px-2 text-xs text-gray-500">
                                   {calculateTravelTime(schedule.departureTime, schedule.arrivalTime)}
                                 </div>
                               </div>
-                              <span className="text-2xl font-bold">{schedule.arrivalTime}</span>
+                              <span className="text-2xl font-bold">{formatTime(schedule.arrivalTime)}</span>
                             </div>
                             <div className="flex justify-between mt-2">
                               <div className="flex items-center gap-1">
                                 <MapPin className="h-4 w-4 text-gray-500" />
-                                <span>{schedule.route.from}</span>
+                                <span>{schedule.route.origin}</span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <MapPin className="h-4 w-4 text-gray-500" />
-                                <span>{schedule.route.to}</span>
+                                <span>{schedule.route.destination}</span>
                               </div>
                             </div>
                           </div>
                           <div className="flex flex-col items-end">
-                            <Badge className={`mb-2 ${getBusTypeColor(schedule.busType)}`}>
-                              {schedule.busType}
+                            <Badge className={`mb-2 ${getBusTypeColor(schedule.bus)}`}>
+                              {schedule.bus}
                             </Badge>
                             <div className="flex items-center gap-1 text-sm">
                               <Users className="h-4 w-4" />
@@ -206,7 +169,7 @@ const Schedules: React.FC = () => {
                           <div className="w-full md:w-auto">
                             <Button 
                               className="w-full md:w-auto bg-teal-600 hover:bg-teal-700"
-                              onClick={() => handleSelectBus(schedule.id)}
+                              onClick={() => handleSelectBus(schedule._id)}
                             >
                               Select This Bus
                             </Button>
@@ -231,12 +194,5 @@ const Schedules: React.FC = () => {
     </>
   );
 };
-
-// Helper function to calculate travel time
-function calculateTravelTime(departure: string, arrival: string): string {
-  // Simple implementation for demo purposes
-  // In a real app, you would parse the times and calculate the difference
-  return "4h 30m";
-}
 
 export default Schedules;

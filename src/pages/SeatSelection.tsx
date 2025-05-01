@@ -13,30 +13,38 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { Bus, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
+import { schedulesApi, bookingsApi } from '@/services/api';
+import { formatTime, formatDate } from '@/lib/utils/dateUtils';
+
+interface Seat {
+  id: string;
+  number: string;
+  isAvailable: boolean;
+}
 
 interface Schedule {
-  id: string;
+  _id: string;
   route: {
-    from: string;
-    to: string;
+    name: string;
+    origin: string;
+    destination: string;
+    distance: number;
+    estimatedDuration: number;
   };
   departureTime: string;
   arrivalTime: string;
   price: number;
-  busType: string;
+  bus: string;
   availableSeats: number;
   totalSeats: number;
-  seatMap: {
-    id: string;
-    number: string;
-    isAvailable: boolean;
-  }[];
+  bookedSeats: string[];
 }
 
 const SeatSelection = () => {
   const { scheduleId } = useParams<{ scheduleId: string }>();
   const [schedule, setSchedule] = useState<Schedule | null>(null);
+  const [seatMap, setSeatMap] = useState<Seat[]>([]);
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const { user, isAuthenticated } = useAuth();
@@ -55,30 +63,15 @@ const SeatSelection = () => {
   const fetchSchedule = async () => {
     setLoading(true);
     try {
-      // This would be a real API call in production
-      // const response = await fetch(`/api/schedules/${scheduleId}`);
-      // const data = await response.json();
+      if (!scheduleId) {
+        throw new Error('Schedule ID is missing');
+      }
       
-      // For demo, we'll use mock data
-      setTimeout(() => {
-        const mockSchedule: Schedule = {
-          id: scheduleId || "schedule1",
-          route: {
-            from: "New York",
-            to: "Boston"
-          },
-          departureTime: "08:00 AM",
-          arrivalTime: "12:30 PM",
-          price: 45.99,
-          busType: "Express",
-          availableSeats: 23,
-          totalSeats: 36,
-          seatMap: generateMockSeatMap(36, 23)
-        };
-        
-        setSchedule(mockSchedule);
-        setLoading(false);
-      }, 1000);
+      const data = await schedulesApi.getScheduleById(scheduleId);
+      setSchedule(data);
+      
+      // Generate seat map based on the schedule data
+      generateSeatMap(data.totalSeats, data.bookedSeats || []);
     } catch (error) {
       console.error("Error fetching schedule:", error);
       toast({
@@ -86,22 +79,15 @@ const SeatSelection = () => {
         description: "Failed to load bus schedule information",
         variant: "destructive",
       });
+    } finally {
       setLoading(false);
     }
   };
 
-  const generateMockSeatMap = (total: number, available: number) => {
-    const seatMap = [];
-    const unavailableCount = total - available;
+  const generateSeatMap = (totalSeats: number, bookedSeats: string[]) => {
+    const seats: Seat[] = [];
     
-    // Generate random unavailable seats
-    const unavailableSeats = new Set<number>();
-    while (unavailableSeats.size < unavailableCount) {
-      unavailableSeats.add(Math.floor(Math.random() * total) + 1);
-    }
-    
-    // Create the seat map
-    for (let i = 1; i <= total; i++) {
+    for (let i = 1; i <= totalSeats; i++) {
       const row = Math.ceil(i / 4);
       const position = i % 4 === 0 ? 4 : i % 4;
       let seatNumber;
@@ -111,17 +97,19 @@ const SeatSelection = () => {
       else if (position === 3) seatNumber = `C${row}`; 
       else seatNumber = `D${row}`;
       
-      seatMap.push({
+      seats.push({
         id: `seat-${i}`,
         number: seatNumber,
-        isAvailable: !unavailableSeats.has(i)
+        isAvailable: !bookedSeats.includes(seatNumber)
       });
     }
     
-    return seatMap;
+    setSeatMap(seats);
   };
 
-  const toggleSeatSelection = (seatId: string, seatNumber: string) => {
+  const toggleSeatSelection = (seatId: string, seatNumber: string, isAvailable: boolean) => {
+    if (!isAvailable) return;
+    
     if (selectedSeats.includes(seatNumber)) {
       setSelectedSeats(selectedSeats.filter(seat => seat !== seatNumber));
     } else {
@@ -140,19 +128,17 @@ const SeatSelection = () => {
     }
 
     try {
-      // This would be a real API call in production
-      // await fetch('/api/bookings', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     userId: user?.id,
-      //     scheduleId: scheduleId,
-      //     seatNumbers: selectedSeats,
-      //     price: schedule?.price,
-      //   }),
-      // });
+      if (!scheduleId || !schedule) {
+        throw new Error('Invalid schedule data');
+      }
+      
+      const bookingData = {
+        scheduleId,
+        seatNumbers: selectedSeats,
+        totalAmount: calculateTotalPrice()
+      };
+      
+      await bookingsApi.createBooking(bookingData);
 
       toast({
         title: "Booking successful!",
@@ -172,7 +158,7 @@ const SeatSelection = () => {
   };
 
   const calculateTotalPrice = () => {
-    return schedule ? (schedule.price * selectedSeats.length).toFixed(2) : "0.00";
+    return schedule ? (schedule.price * selectedSeats.length) : 0;
   };
 
   return (
@@ -183,7 +169,7 @@ const SeatSelection = () => {
           <h1 className="text-3xl font-bold mb-2">Select Your Seats</h1>
           {schedule && (
             <p className="text-gray-600">
-              {schedule.route.from} to {schedule.route.to} • {schedule.departureTime}
+              {schedule.route.origin} to {schedule.route.destination} • {formatDate(schedule.departureTime)} • {formatTime(schedule.departureTime)}
             </p>
           )}
         </div>
@@ -208,10 +194,10 @@ const SeatSelection = () => {
                     </div>
                     
                     <div className="grid grid-cols-4 gap-3">
-                      {schedule.seatMap.map((seat) => (
+                      {seatMap.map((seat) => (
                         <div 
                           key={seat.id}
-                          onClick={() => seat.isAvailable && toggleSeatSelection(seat.id, seat.number)}
+                          onClick={() => toggleSeatSelection(seat.id, seat.number, seat.isAvailable)}
                           className={`
                             aspect-square flex items-center justify-center rounded-md text-sm font-medium transition-colors cursor-pointer relative
                             ${!seat.isAvailable ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 
@@ -253,15 +239,15 @@ const SeatSelection = () => {
               <CardContent className="space-y-4">
                 <div className="flex justify-between">
                   <span>Bus Type:</span>
-                  <span className="font-medium">{schedule.busType}</span>
+                  <span className="font-medium">{schedule.bus}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Departure:</span>
-                  <span className="font-medium">{schedule.departureTime}</span>
+                  <span className="font-medium">{formatTime(schedule.departureTime)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Arrival:</span>
-                  <span className="font-medium">{schedule.arrivalTime}</span>
+                  <span className="font-medium">{formatTime(schedule.arrivalTime)}</span>
                 </div>
                 <div className="border-t pt-4">
                   <div className="flex justify-between">
@@ -276,7 +262,7 @@ const SeatSelection = () => {
                   </div>
                   <div className="flex justify-between mt-4 text-lg font-bold">
                     <span>Total:</span>
-                    <span className="text-bus-600">${calculateTotalPrice()}</span>
+                    <span className="text-bus-600">${calculateTotalPrice().toFixed(2)}</span>
                   </div>
                 </div>
                 <Button 

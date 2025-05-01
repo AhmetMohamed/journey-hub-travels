@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,63 +29,10 @@ import { useToast } from '@/components/ui/use-toast';
 import { Edit, Trash2, MoreHorizontal, Plus, Search } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-
-// Mock data for routes
-const initialRoutes = [
-  {
-    id: 1,
-    name: 'NYC-BOS-01',
-    origin: 'New York',
-    destination: 'Boston',
-    distance: 215,
-    estimatedDuration: 270, // in minutes
-    description: 'Express route via I-95',
-    isActive: true
-  },
-  {
-    id: 2,
-    name: 'CHI-MIL-01',
-    origin: 'Chicago',
-    destination: 'Milwaukee',
-    distance: 92,
-    estimatedDuration: 105, // in minutes
-    description: 'Direct route via I-94',
-    isActive: true
-  },
-  {
-    id: 3,
-    name: 'LA-SD-01',
-    origin: 'Los Angeles',
-    destination: 'San Diego',
-    distance: 120,
-    estimatedDuration: 135, // in minutes
-    description: 'Coastal route via I-5',
-    isActive: true
-  },
-  {
-    id: 4,
-    name: 'SEA-POR-01',
-    origin: 'Seattle',
-    destination: 'Portland',
-    distance: 174,
-    estimatedDuration: 180, // in minutes
-    description: 'Scenic route via I-5',
-    isActive: false
-  },
-  {
-    id: 5,
-    name: 'MIA-ORL-01',
-    origin: 'Miami',
-    destination: 'Orlando',
-    distance: 235,
-    estimatedDuration: 225, // in minutes
-    description: 'Direct route via Florida Turnpike',
-    isActive: true
-  }
-];
+import { routesApi } from '@/services/api';
 
 interface Route {
-  id: number;
+  _id: string;
   name: string;
   origin: string;
   destination: string;
@@ -96,7 +43,7 @@ interface Route {
 }
 
 const emptyRoute: Route = {
-  id: 0,
+  _id: '',
   name: '',
   origin: '',
   destination: '',
@@ -107,13 +54,35 @@ const emptyRoute: Route = {
 };
 
 const AdminRoutes = () => {
-  const [routes, setRoutes] = useState<Route[]>(initialRoutes);
+  const [routes, setRoutes] = useState<Route[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentRoute, setCurrentRoute] = useState<Route>(emptyRoute);
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    fetchRoutes();
+  }, []);
+
+  const fetchRoutes = async () => {
+    setLoading(true);
+    try {
+      const data = await routesApi.getAllRoutes();
+      setRoutes(data);
+    } catch (error) {
+      console.error('Error fetching routes:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch routes. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
@@ -156,7 +125,7 @@ const AdminRoutes = () => {
     setIsDeleteDialogOpen(false);
   };
 
-  const handleSaveRoute = () => {
+  const handleSaveRoute = async () => {
     if (!currentRoute.name || !currentRoute.origin || !currentRoute.destination) {
       toast({
         title: "Missing information",
@@ -166,47 +135,78 @@ const AdminRoutes = () => {
       return;
     }
 
-    if (isEditing) {
-      // Update existing route
-      setRoutes(routes.map(route => 
-        route.id === currentRoute.id ? currentRoute : route
-      ));
+    try {
+      if (isEditing) {
+        // Update existing route
+        const updatedRoute = await routesApi.updateRoute(currentRoute._id, currentRoute);
+        setRoutes(routes.map(route => 
+          route._id === currentRoute._id ? updatedRoute : route
+        ));
+        toast({
+          title: "Route updated",
+          description: `${currentRoute.name} has been updated`
+        });
+      } else {
+        // Add new route
+        const newRoute = await routesApi.createRoute(currentRoute);
+        setRoutes([...routes, newRoute]);
+        toast({
+          title: "Route added",
+          description: `${currentRoute.name} has been added`
+        });
+      }
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error('Error saving route:', error);
       toast({
-        title: "Route updated",
-        description: `${currentRoute.name} has been updated`
-      });
-    } else {
-      // Add new route
-      const newId = Math.max(...routes.map(route => route.id)) + 1;
-      setRoutes([...routes, { ...currentRoute, id: newId }]);
-      toast({
-        title: "Route added",
-        description: `${currentRoute.name} has been added`
+        title: "Error",
+        description: isEditing ? "Failed to update route" : "Failed to create route",
+        variant: "destructive"
       });
     }
-
-    setIsDialogOpen(false);
   };
 
-  const handleDeleteRoute = () => {
-    setRoutes(routes.filter(route => route.id !== currentRoute.id));
-    toast({
-      title: "Route deleted",
-      description: `${currentRoute.name} has been deleted`
-    });
-    setIsDeleteDialogOpen(false);
+  const handleDeleteRoute = async () => {
+    try {
+      await routesApi.deleteRoute(currentRoute._id);
+      setRoutes(routes.filter(route => route._id !== currentRoute._id));
+      toast({
+        title: "Route deleted",
+        description: `${currentRoute.name} has been deleted`
+      });
+      setIsDeleteDialogOpen(false);
+    } catch (error) {
+      console.error('Error deleting route:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete route",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleToggleActive = (id: number, isActive: boolean) => {
-    setRoutes(routes.map(route => 
-      route.id === id ? { ...route, isActive } : route
-    ));
-    
-    const route = routes.find(r => r.id === id);
-    toast({
-      title: isActive ? "Route activated" : "Route deactivated",
-      description: `${route?.name} has been ${isActive ? 'activated' : 'deactivated'}`
-    });
+  const handleToggleActive = async (id: string, isActive: boolean) => {
+    try {
+      const route = routes.find(r => r._id === id);
+      if (!route) return;
+
+      const updatedRoute = await routesApi.updateRoute(id, { ...route, isActive });
+      setRoutes(routes.map(route => 
+        route._id === id ? { ...route, isActive } : route
+      ));
+      
+      toast({
+        title: isActive ? "Route activated" : "Route deactivated",
+        description: `${route.name} has been ${isActive ? 'activated' : 'deactivated'}`
+      });
+    } catch (error) {
+      console.error('Error toggling route active state:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update route status",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -232,61 +232,67 @@ const AdminRoutes = () => {
         </div>
 
         <div className="bg-white rounded-md shadow">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Origin</TableHead>
-                <TableHead>Destination</TableHead>
-                <TableHead>Distance</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredRoutes.map((route) => (
-                <TableRow key={route.id}>
-                  <TableCell className="font-medium">{route.name}</TableCell>
-                  <TableCell>{route.origin}</TableCell>
-                  <TableCell>{route.destination}</TableCell>
-                  <TableCell>{route.distance} miles</TableCell>
-                  <TableCell>{formatDuration(route.estimatedDuration)}</TableCell>
-                  <TableCell>
-                    <Switch 
-                      checked={route.isActive}
-                      onCheckedChange={(checked) => handleToggleActive(route.id, checked)}
-                      className="data-[state=checked]:bg-green-500"
-                    />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleEditRouteClick(route)}>
-                          <Edit className="h-4 w-4 mr-2" /> Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDeleteRouteClick(route)} className="text-red-600">
-                          <Trash2 className="h-4 w-4 mr-2" /> Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {filteredRoutes.length === 0 && (
+          {loading ? (
+            <div className="flex justify-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-bus-500"></div>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                    No routes found
-                  </TableCell>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Origin</TableHead>
+                  <TableHead>Destination</TableHead>
+                  <TableHead>Distance</TableHead>
+                  <TableHead>Duration</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredRoutes.map((route) => (
+                  <TableRow key={route._id}>
+                    <TableCell className="font-medium">{route.name}</TableCell>
+                    <TableCell>{route.origin}</TableCell>
+                    <TableCell>{route.destination}</TableCell>
+                    <TableCell>{route.distance} miles</TableCell>
+                    <TableCell>{formatDuration(route.estimatedDuration)}</TableCell>
+                    <TableCell>
+                      <Switch 
+                        checked={route.isActive}
+                        onCheckedChange={(checked) => handleToggleActive(route._id, checked)}
+                        className="data-[state=checked]:bg-green-500"
+                      />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleEditRouteClick(route)}>
+                            <Edit className="h-4 w-4 mr-2" /> Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDeleteRouteClick(route)} className="text-red-600">
+                            <Trash2 className="h-4 w-4 mr-2" /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {filteredRoutes.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      No routes found
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          )}
         </div>
       </div>
 
@@ -303,78 +309,71 @@ const AdminRoutes = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Route Name</Label>
-                <Input
-                  id="name"
-                  value={currentRoute.name}
-                  onChange={(e) => setCurrentRoute({...currentRoute, name: e.target.value})}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="active">Status</Label>
-                <div className="flex items-center space-x-2 pt-2">
-                  <Switch
-                    id="active"
-                    checked={currentRoute.isActive}
-                    onCheckedChange={(checked) => setCurrentRoute({...currentRoute, isActive: checked})}
-                    className="data-[state=checked]:bg-green-500"
-                  />
-                  <Label htmlFor="active">
-                    {currentRoute.isActive ? 'Active' : 'Inactive'}
-                  </Label>
-                </div>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="name">Route Name</Label>
+              <Input 
+                id="name" 
+                value={currentRoute.name}
+                onChange={(e) => setCurrentRoute({...currentRoute, name: e.target.value})}
+              />
             </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="origin">Origin</Label>
-                <Input
-                  id="origin"
+                <Input 
+                  id="origin" 
                   value={currentRoute.origin}
                   onChange={(e) => setCurrentRoute({...currentRoute, origin: e.target.value})}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="destination">Destination</Label>
-                <Input
-                  id="destination"
+                <Input 
+                  id="destination" 
                   value={currentRoute.destination}
                   onChange={(e) => setCurrentRoute({...currentRoute, destination: e.target.value})}
                 />
               </div>
             </div>
-
+            
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="distance">Distance (miles)</Label>
-                <Input
-                  id="distance"
+                <Input 
+                  id="distance" 
                   type="number"
-                  value={currentRoute.distance.toString()}
+                  value={currentRoute.distance}
                   onChange={(e) => setCurrentRoute({...currentRoute, distance: Number(e.target.value)})}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="duration">Duration (minutes)</Label>
-                <Input
-                  id="duration"
+                <Input 
+                  id="duration" 
                   type="number"
-                  value={currentRoute.estimatedDuration.toString()}
+                  value={currentRoute.estimatedDuration}
                   onChange={(e) => setCurrentRoute({...currentRoute, estimatedDuration: Number(e.target.value)})}
                 />
               </div>
             </div>
-
+            
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
-              <Input
-                id="description"
+              <Input 
+                id="description" 
                 value={currentRoute.description}
                 onChange={(e) => setCurrentRoute({...currentRoute, description: e.target.value})}
               />
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Switch 
+                id="isActive" 
+                checked={currentRoute.isActive}
+                onCheckedChange={(checked) => setCurrentRoute({...currentRoute, isActive: checked})}
+              />
+              <Label htmlFor="isActive">Active Route</Label>
             </div>
           </div>
           <DialogFooter>
@@ -390,8 +389,7 @@ const AdminRoutes = () => {
           <DialogHeader>
             <DialogTitle>Delete Route</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete the route "{currentRoute.name}"? 
-              This action cannot be undone.
+              Are you sure you want to delete {currentRoute.name}? This action will deactivate the route.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

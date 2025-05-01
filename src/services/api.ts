@@ -309,3 +309,158 @@ export const bookingsApi = {
     }
   }
 };
+
+// Dashboard API
+export const dashboardApi = {
+  getStats: async () => {
+    try {
+      const response = await fetch(`${API_URL}/admin/dashboard/stats`, {
+        headers: getAuthHeader()
+      });
+      return await handleResponse(response);
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch dashboard statistics.',
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  },
+  
+  getRevenueData: async () => {
+    try {
+      const response = await fetch(`${API_URL}/admin/dashboard/revenue`, {
+        headers: getAuthHeader()
+      });
+      return await handleResponse(response);
+    } catch (error) {
+      console.error('Error fetching revenue data:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch revenue data.',
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  },
+  
+  getBookingsTrend: async () => {
+    try {
+      const response = await fetch(`${API_URL}/admin/dashboard/bookings-trend`, {
+        headers: getAuthHeader()
+      });
+      return await handleResponse(response);
+    } catch (error) {
+      console.error('Error fetching bookings trend:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch bookings trend data.',
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  },
+  
+  getRouteUsage: async () => {
+    try {
+      const response = await fetch(`${API_URL}/admin/dashboard/route-usage`, {
+        headers: getAuthHeader()
+      });
+      return await handleResponse(response);
+    } catch (error) {
+      console.error('Error fetching route usage data:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch route usage data.',
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  },
+  
+  getBusTypeDistribution: async () => {
+    try {
+      const response = await fetch(`${API_URL}/admin/dashboard/bus-type`, {
+        headers: getAuthHeader()
+      });
+      return await handleResponse(response);
+    } catch (error) {
+      console.error('Error fetching bus type distribution:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch bus type distribution data.',
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  }
+};
+
+// Reports API
+export const reportsApi = {
+  generateReport: async (reportType: string, dateRange: string, customDates?: { startDate: string, endDate: string }) => {
+    try {
+      let url = `${API_URL}/admin/reports/${reportType}?dateRange=${dateRange}`;
+      
+      if (dateRange === 'custom' && customDates) {
+        url += `&startDate=${customDates.startDate}&endDate=${customDates.endDate}`;
+      }
+      
+      const response = await fetch(url, {
+        headers: getAuthHeader()
+      });
+      return await handleResponse(response);
+    } catch (error) {
+      console.error('Error generating report:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to generate report. Please try again.',
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  },
+  
+  downloadReport: async (reportType: string, dateRange: string, format: string = 'csv', customDates?: { startDate: string, endDate: string }) => {
+    try {
+      let url = `${API_URL}/admin/reports/${reportType}/download?format=${format}&dateRange=${dateRange}`;
+      
+      if (dateRange === 'custom' && customDates) {
+        url += `&startDate=${customDates.startDate}&endDate=${customDates.endDate}`;
+      }
+      
+      const response = await fetch(url, {
+        headers: getAuthHeader()
+      });
+      
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({
+          message: 'An unknown error occurred'
+        }));
+        throw new Error(error.message || `Error: ${response.status}`);
+      }
+      
+      // For file download
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `${reportType}-report.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      return true;
+    } catch (error) {
+      console.error('Error downloading report:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to download report. Please try again.',
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  }
+};

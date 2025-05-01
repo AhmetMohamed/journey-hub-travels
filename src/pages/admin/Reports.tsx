@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import {
   Card,
@@ -16,70 +16,114 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BarChart, LineChart } from '@/components/ui/chart';
 import { useToast } from '@/components/ui/use-toast';
 import { Calendar, Download } from 'lucide-react';
+import { reportsApi } from '@/services/api';
+
+interface ReportData {
+  name: string;
+  value: number;
+}
+
+interface ReportStats {
+  totalRevenue: number;
+  totalBookings: number;
+  averageOccupancy: number;
+  revenueChange: number;
+  bookingsChange: number;
+  occupancyChange: number;
+}
 
 const AdminReports = () => {
   const [reportType, setReportType] = useState("revenue");
   const [dateRange, setDateRange] = useState("last30days");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [reportData, setReportData] = useState<ReportData[]>([]);
+  const [stats, setStats] = useState<ReportStats>({
+    totalRevenue: 0,
+    totalBookings: 0,
+    averageOccupancy: 0,
+    revenueChange: 0,
+    bookingsChange: 0,
+    occupancyChange: 0
+  });
   const { toast } = useToast();
 
-  // Sample data for revenue report
-  const revenueData = [
-    { name: "Jan", value: 12000 },
-    { name: "Feb", value: 15000 },
-    { name: "Mar", value: 18000 },
-    { name: "Apr", value: 16500 },
-    { name: "May", value: 19000 },
-    { name: "Jun", value: 22000 },
-  ];
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
 
-  // Sample data for bookings report
-  const bookingsData = [
-    { name: "Jan", value: 240 },
-    { name: "Feb", value: 280 },
-    { name: "Mar", value: 320 },
-    { name: "Apr", value: 290 },
-    { name: "May", value: 310 },
-    { name: "Jun", value: 370 },
-  ];
-
-  // Sample data for occupancy report
-  const occupancyData = [
-    { name: "Jan", value: 78 },
-    { name: "Feb", value: 82 },
-    { name: "Mar", value: 85 },
-    { name: "Apr", value: 80 },
-    { name: "May", value: 83 },
-    { name: "Jun", value: 88 },
-  ];
-
-  // Sample data for route performance
-  const routePerformanceData = [
-    { name: "New York - Boston", value: 120 },
-    { name: "Chicago - Milwaukee", value: 80 },
-    { name: "Los Angeles - San Diego", value: 95 },
-    { name: "Seattle - Portland", value: 65 },
-    { name: "Miami - Orlando", value: 75 },
-  ];
-
-  const generateReport = () => {
+  const fetchInitialData = async () => {
     setLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Fetch initial report data with default settings
+      const data = await generateReport();
+      setReportData(data);
+    } catch (error) {
+      console.error('Error fetching initial report data:', error);
+    } finally {
       setLoading(false);
+    }
+  };
+
+  const generateReport = async () => {
+    setGenerating(true);
+    
+    try {
+      const customDates = dateRange === 'custom' 
+        ? { startDate, endDate } 
+        : undefined;
+      
+      const data = await reportsApi.generateReport(reportType, dateRange, customDates);
+      
+      // Update stats
+      if (data.stats) {
+        setStats(data.stats);
+      }
+      
+      // Set chart data
+      setReportData(data.chartData || []);
+      
       toast({
         title: "Report Generated",
         description: `${reportType.charAt(0).toUpperCase() + reportType.slice(1)} report for the selected period has been generated.`,
       });
-    }, 1500);
+      
+      return data.chartData;
+    } catch (error) {
+      console.error('Error generating report:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate report. Please try again.",
+        variant: "destructive"
+      });
+      return [];
+    } finally {
+      setGenerating(false);
+    }
   };
 
-  const downloadReport = () => {
-    toast({
-      title: "Download Started",
-      description: "Your report is being downloaded as CSV.",
-    });
+  const downloadReport = async () => {
+    try {
+      const customDates = dateRange === 'custom' 
+        ? { startDate, endDate } 
+        : undefined;
+        
+      await reportsApi.downloadReport(reportType, dateRange, 'csv', customDates);
+      
+      toast({
+        title: "Download Started",
+        description: "Your report is being downloaded as CSV.",
+      });
+    } catch (error) {
+      console.error('Error downloading report:', error);
+      toast({
+        title: "Error",
+        description: "Failed to download report. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -95,8 +139,8 @@ const AdminReports = () => {
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">$124,750</div>
-              <p className="text-xs text-green-600 flex items-center mt-1">+8% from last month</p>
+              <div className="text-3xl font-bold">${stats.totalRevenue.toLocaleString()}</div>
+              <p className="text-xs text-green-600 flex items-center mt-1">+{stats.revenueChange}% from last month</p>
             </CardContent>
           </Card>
 
@@ -105,8 +149,8 @@ const AdminReports = () => {
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Bookings</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">2,856</div>
-              <p className="text-xs text-green-600 flex items-center mt-1">+12% from last month</p>
+              <div className="text-3xl font-bold">{stats.totalBookings.toLocaleString()}</div>
+              <p className="text-xs text-green-600 flex items-center mt-1">+{stats.bookingsChange}% from last month</p>
             </CardContent>
           </Card>
 
@@ -115,8 +159,8 @@ const AdminReports = () => {
               <CardTitle className="text-sm font-medium text-muted-foreground">Average Occupancy</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">83%</div>
-              <p className="text-xs text-green-600 flex items-center mt-1">+5% from last month</p>
+              <div className="text-3xl font-bold">{stats.averageOccupancy}%</div>
+              <p className="text-xs text-green-600 flex items-center mt-1">+{stats.occupancyChange}% from last month</p>
             </CardContent>
           </Card>
         </div>
@@ -128,7 +172,7 @@ const AdminReports = () => {
               <CardDescription>Configure and generate reports</CardDescription>
             </CardHeader>
             <CardContent>
-              <form className="space-y-4">
+              <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); generateReport(); }}>
                 <div className="space-y-2">
                   <Label htmlFor="report-type">Report Type</Label>
                   <Select 
@@ -174,6 +218,8 @@ const AdminReports = () => {
                         <Input
                           id="start-date"
                           type="date"
+                          value={startDate}
+                          onChange={(e) => setStartDate(e.target.value)}
                         />
                       </div>
                     </div>
@@ -183,6 +229,8 @@ const AdminReports = () => {
                         <Input
                           id="end-date"
                           type="date"
+                          value={endDate}
+                          onChange={(e) => setEndDate(e.target.value)}
                         />
                       </div>
                     </div>
@@ -190,12 +238,11 @@ const AdminReports = () => {
                 )}
                 
                 <Button 
-                  type="button"
-                  onClick={generateReport}
+                  type="submit"
                   className="w-full"
-                  disabled={loading}
+                  disabled={generating || loading}
                 >
-                  {loading ? "Generating..." : "Generate Report"}
+                  {generating ? "Generating..." : "Generate Report"}
                 </Button>
                 
                 <Button
@@ -203,6 +250,7 @@ const AdminReports = () => {
                   variant="outline"
                   className="w-full"
                   onClick={downloadReport}
+                  disabled={generating || loading}
                 >
                   <Download className="mr-2 h-4 w-4" />
                   Download CSV
@@ -222,50 +270,56 @@ const AdminReports = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="h-96">
-              <Tabs defaultValue={reportType} value={reportType} onValueChange={setReportType}>
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="revenue">Revenue</TabsTrigger>
-                  <TabsTrigger value="bookings">Bookings</TabsTrigger>
-                  <TabsTrigger value="occupancy">Occupancy</TabsTrigger>
-                  <TabsTrigger value="route">Routes</TabsTrigger>
-                </TabsList>
-                <TabsContent value="revenue" className="h-80 mt-4">
-                  <BarChart
-                    data={revenueData}
-                    categories={["value"]}
-                    colors={["#8B5CF6"]}
-                    valueFormatter={(value) => `$${value.toLocaleString()}`}
-                    yAxisWidth={80}
-                  />
-                </TabsContent>
-                <TabsContent value="bookings" className="h-80 mt-4">
-                  <LineChart
-                    data={bookingsData}
-                    categories={["value"]}
-                    colors={["#10B981"]}
-                    valueFormatter={(value) => `${value} bookings`}
-                    yAxisWidth={60}
-                  />
-                </TabsContent>
-                <TabsContent value="occupancy" className="h-80 mt-4">
-                  <LineChart
-                    data={occupancyData}
-                    categories={["value"]}
-                    colors={["#F59E0B"]}
-                    valueFormatter={(value) => `${value}%`}
-                    yAxisWidth={60}
-                  />
-                </TabsContent>
-                <TabsContent value="route" className="h-80 mt-4">
-                  <BarChart
-                    data={routePerformanceData}
-                    categories={["value"]}
-                    colors={["#6366F1"]}
-                    valueFormatter={(value) => `${value} bookings`}
-                    layout="vertical"
-                  />
-                </TabsContent>
-              </Tabs>
+              {loading ? (
+                <div className="flex justify-center items-center h-full">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-bus-500"></div>
+                </div>
+              ) : (
+                <Tabs defaultValue={reportType} value={reportType} onValueChange={setReportType}>
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="revenue">Revenue</TabsTrigger>
+                    <TabsTrigger value="bookings">Bookings</TabsTrigger>
+                    <TabsTrigger value="occupancy">Occupancy</TabsTrigger>
+                    <TabsTrigger value="route">Routes</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="revenue" className="h-80 mt-4">
+                    <BarChart
+                      data={reportData}
+                      categories={["value"]}
+                      colors={["#8B5CF6"]}
+                      valueFormatter={(value) => `$${value.toLocaleString()}`}
+                      yAxisWidth={80}
+                    />
+                  </TabsContent>
+                  <TabsContent value="bookings" className="h-80 mt-4">
+                    <LineChart
+                      data={reportData}
+                      categories={["value"]}
+                      colors={["#10B981"]}
+                      valueFormatter={(value) => `${value} bookings`}
+                      yAxisWidth={60}
+                    />
+                  </TabsContent>
+                  <TabsContent value="occupancy" className="h-80 mt-4">
+                    <LineChart
+                      data={reportData}
+                      categories={["value"]}
+                      colors={["#F59E0B"]}
+                      valueFormatter={(value) => `${value}%`}
+                      yAxisWidth={60}
+                    />
+                  </TabsContent>
+                  <TabsContent value="route" className="h-80 mt-4">
+                    <BarChart
+                      data={reportData}
+                      categories={["value"]}
+                      colors={["#6366F1"]}
+                      valueFormatter={(value) => `${value} bookings`}
+                      layout="vertical"
+                    />
+                  </TabsContent>
+                </Tabs>
+              )}
             </CardContent>
           </Card>
         </div>
