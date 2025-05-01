@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { Bus, LayoutDashboard, Map, Calendar, Users, LogOut, Menu, X } from 'lucide-react';
+import { Bus, LayoutDashboard, Map, Calendar, Users, LogOut, Menu, X, Ticket, BarChart } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,7 +40,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { name: 'Dashboard', path: '/admin', icon: <LayoutDashboard className="h-5 w-5" /> },
     { name: 'Routes', path: '/admin/routes', icon: <Map className="h-5 w-5" /> },
     { name: 'Schedules', path: '/admin/schedules', icon: <Calendar className="h-5 w-5" /> },
+    { name: 'Bookings', path: '/admin/bookings', icon: <Ticket className="h-5 w-5" /> },
     { name: 'Users', path: '/admin/users', icon: <Users className="h-5 w-5" /> },
+    { name: 'Reports', path: '/admin/reports', icon: <BarChart className="h-5 w-5" /> },
   ];
 
   const isActive = (path: string) => {

@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, MapPin, Users } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useToast } from "@/components/ui/use-toast";
 
 interface Schedule {
   id: string;
@@ -23,88 +24,95 @@ interface Schedule {
 
 const Schedules: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const queryParams = new URLSearchParams(location.search);
   const [scheduleData, setScheduleData] = useState<Schedule[]>([]);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    // Simulating API call with demo data
     const from = queryParams.get('from') || '';
     const to = queryParams.get('to') || '';
     const date = queryParams.get('date') || '';
     
-    // Simulate loading
-    setTimeout(() => {
-      setScheduleData([
-        {
-          id: "sch1",
-          route: {
-            from: from || "New York",
-            to: to || "Boston"
-          },
-          departureTime: "08:00 AM",
-          arrivalTime: "12:30 PM",
-          price: 45.99,
-          busType: "Express",
-          availableSeats: 23
-        },
-        {
-          id: "sch2",
-          route: {
-            from: from || "New York",
-            to: to || "Boston"
-          },
-          departureTime: "10:15 AM",
-          arrivalTime: "02:45 PM",
-          price: 39.99,
-          busType: "Standard",
-          availableSeats: 31
-        },
-        {
-          id: "sch3",
-          route: {
-            from: from || "New York",
-            to: to || "Boston"
-          },
-          departureTime: "12:30 PM",
-          arrivalTime: "05:00 PM",
-          price: 42.99,
-          busType: "Express",
-          availableSeats: 15
-        },
-        {
-          id: "sch4",
-          route: {
-            from: from || "New York",
-            to: to || "Boston"
-          },
-          departureTime: "03:45 PM",
-          arrivalTime: "08:15 PM",
-          price: 52.99,
-          busType: "Premium",
-          availableSeats: 8
-        }
-      ]);
-      setLoading(false);
-    }, 1000);
-    
-    // Uncomment for real API implementation
-    /*
-    const fetchSchedules = async () => {
-      try {
-        const response = await fetch(`/api/schedules?from=${from}&to=${to}&date=${date}`);
-        const data = await response.json();
-        setScheduleData(data);
-      } catch (error) {
-        console.error("Error fetching schedules:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchSchedules();
-    */
+    fetchSchedules(from, to, date);
   }, [location.search]);
+  
+  const fetchSchedules = async (from: string, to: string, date: string) => {
+    setLoading(true);
+    try {
+      // Real API call (commented out for now)
+      // const response = await fetch(`/api/schedules?from=${from}&to=${to}&date=${date}`);
+      // if (!response.ok) {
+      //   throw new Error('Failed to fetch schedules');
+      // }
+      // const data = await response.json();
+      // setScheduleData(data);
+      
+      // For development, using mock data
+      setTimeout(() => {
+        setScheduleData([
+          {
+            id: "sch1",
+            route: {
+              from: from || "New York",
+              to: to || "Boston"
+            },
+            departureTime: "08:00 AM",
+            arrivalTime: "12:30 PM",
+            price: 45.99,
+            busType: "Express",
+            availableSeats: 23
+          },
+          {
+            id: "sch2",
+            route: {
+              from: from || "New York",
+              to: to || "Boston"
+            },
+            departureTime: "10:15 AM",
+            arrivalTime: "02:45 PM",
+            price: 39.99,
+            busType: "Standard",
+            availableSeats: 31
+          },
+          {
+            id: "sch3",
+            route: {
+              from: from || "New York",
+              to: to || "Boston"
+            },
+            departureTime: "12:30 PM",
+            arrivalTime: "05:00 PM",
+            price: 42.99,
+            busType: "Express",
+            availableSeats: 15
+          },
+          {
+            id: "sch4",
+            route: {
+              from: from || "New York",
+              to: to || "Boston"
+            },
+            departureTime: "03:45 PM",
+            arrivalTime: "08:15 PM",
+            price: 52.99,
+            busType: "Premium",
+            availableSeats: 8
+          }
+        ]);
+        setLoading(false);
+      }, 1000);
+    } catch (error) {
+      console.error("Error fetching schedules:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load schedules. Please try again.",
+        variant: "destructive"
+      });
+      setLoading(false);
+    }
+  };
   
   const getBusTypeColor = (type: string) => {
     switch (type.toLowerCase()) {
@@ -112,6 +120,10 @@ const Schedules: React.FC = () => {
       case 'premium': return "bg-purple-500";
       default: return "bg-blue-500";
     }
+  };
+
+  const handleSelectBus = (scheduleId: string) => {
+    navigate(`/seat-selection/${scheduleId}`);
   };
   
   return (
@@ -192,7 +204,10 @@ const Schedules: React.FC = () => {
                             <div className="text-3xl font-bold text-teal-600">${schedule.price.toFixed(2)}</div>
                           </div>
                           <div className="w-full md:w-auto">
-                            <Button className="w-full md:w-auto bg-teal-600 hover:bg-teal-700">
+                            <Button 
+                              className="w-full md:w-auto bg-teal-600 hover:bg-teal-700"
+                              onClick={() => handleSelectBus(schedule.id)}
+                            >
                               Select This Bus
                             </Button>
                           </div>

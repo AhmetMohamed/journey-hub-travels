@@ -17,7 +17,11 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import AdminRoutes from "./pages/admin/Routes";
 import AdminSchedules from "./pages/admin/Schedules";
 import AdminUsers from "./pages/admin/Users";
+import AdminBookings from "./pages/admin/Bookings";
+import AdminReports from "./pages/admin/Reports";
 import ProtectedRoute from "./components/ProtectedRoute";
+import BookingHistory from "./pages/BookingHistory";
+import SeatSelection from "./pages/SeatSelection";
 
 const queryClient = new QueryClient();
 
@@ -36,12 +40,16 @@ const App = () => (
             <Route path="/schedules" element={<Schedules />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/booking-history" element={<ProtectedRoute><BookingHistory /></ProtectedRoute>} />
+            <Route path="/seat-selection/:scheduleId" element={<ProtectedRoute><SeatSelection /></ProtectedRoute>} />
             
             {/* Admin Routes with Protection */}
             <Route path="/admin" element={<ProtectedRoute allowedRole="admin"><AdminDashboard /></ProtectedRoute>} />
             <Route path="/admin/routes" element={<ProtectedRoute allowedRole="admin"><AdminRoutes /></ProtectedRoute>} />
             <Route path="/admin/schedules" element={<ProtectedRoute allowedRole="admin"><AdminSchedules /></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute allowedRole="admin"><AdminUsers /></ProtectedRoute>} />
+            <Route path="/admin/bookings" element={<ProtectedRoute allowedRole="admin"><AdminBookings /></ProtectedRoute>} />
+            <Route path="/admin/reports" element={<ProtectedRoute allowedRole="admin"><AdminReports /></ProtectedRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
