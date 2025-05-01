@@ -1,44 +1,49 @@
-
-import React from 'react';
-import AdminLayout from '@/components/admin/AdminLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, PieChart, LineChart } from '@/components/ui/chart';
-import { useAuth } from '@/contexts/AuthContext';
+import React from "react";
+import AdminLayout from "@/components/admin/AdminLayout";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { BarChart, PieChart, LineChart } from "recharts";
+import { useAuth } from "@/contexts/AuthContext";
 
 const AdminDashboard = () => {
   const { user } = useAuth();
 
   // Mock data for the charts
   const routeUsageData = [
-    { name: 'New York - Boston', value: 120 },
-    { name: 'Chicago - Milwaukee', value: 80 },
-    { name: 'Los Angeles - San Diego', value: 95 },
-    { name: 'Seattle - Portland', value: 65 },
-    { name: 'Miami - Orlando', value: 75 }
+    { name: "New York - Boston", value: 120 },
+    { name: "Chicago - Milwaukee", value: 80 },
+    { name: "Los Angeles - San Diego", value: 95 },
+    { name: "Seattle - Portland", value: 65 },
+    { name: "Miami - Orlando", value: 75 },
   ];
 
   const revenueData = [
-    { name: 'Jan', value: 12000 },
-    { name: 'Feb', value: 15000 },
-    { name: 'Mar', value: 18000 },
-    { name: 'Apr', value: 16500 },
-    { name: 'May', value: 19000 },
-    { name: 'Jun', value: 22000 }
+    { name: "Jan", value: 12000 },
+    { name: "Feb", value: 15000 },
+    { name: "Mar", value: 18000 },
+    { name: "Apr", value: 16500 },
+    { name: "May", value: 19000 },
+    { name: "Jun", value: 22000 },
   ];
 
   const bookingsTrendData = [
-    { name: 'Week 1', value: 40 },
-    { name: 'Week 2', value: 45 },
-    { name: 'Week 3', value: 60 },
-    { name: 'Week 4', value: 78 },
-    { name: 'Week 5', value: 58 },
-    { name: 'Week 6', value: 65 }
+    { name: "Week 1", value: 40 },
+    { name: "Week 2", value: 45 },
+    { name: "Week 3", value: 60 },
+    { name: "Week 4", value: 78 },
+    { name: "Week 5", value: 58 },
+    { name: "Week 6", value: 65 },
   ];
 
   const busTypeData = [
-    { name: 'Standard', value: 35 },
-    { name: 'Express', value: 45 },
-    { name: 'Premium', value: 20 }
+    { name: "Standard", value: 35 },
+    { name: "Express", value: 45 },
+    { name: "Premium", value: 20 },
   ];
 
   return (
@@ -115,10 +120,12 @@ const AdminDashboard = () => {
           <Card className="col-span-1">
             <CardHeader>
               <CardTitle>Revenue Trend</CardTitle>
-              <CardDescription>Monthly revenue for the past 6 months</CardDescription>
+              <CardDescription>
+                Monthly revenue for the past 6 months
+              </CardDescription>
             </CardHeader>
             <CardContent className="h-80">
-              <BarChart 
+              <BarChart
                 data={revenueData}
                 index="name"
                 categories={["value"]}
@@ -132,10 +139,12 @@ const AdminDashboard = () => {
           <Card className="col-span-1">
             <CardHeader>
               <CardTitle>Bookings Trend</CardTitle>
-              <CardDescription>Weekly bookings for the past 6 weeks</CardDescription>
+              <CardDescription>
+                Weekly bookings for the past 6 weeks
+              </CardDescription>
             </CardHeader>
             <CardContent className="h-80">
-              <LineChart 
+              <LineChart
                 data={bookingsTrendData}
                 index="name"
                 categories={["value"]}
@@ -154,7 +163,7 @@ const AdminDashboard = () => {
               <CardDescription>Top 5 routes by booking volume</CardDescription>
             </CardHeader>
             <CardContent className="h-80">
-              <BarChart 
+              <BarChart
                 data={routeUsageData}
                 index="name"
                 categories={["value"]}
@@ -171,7 +180,7 @@ const AdminDashboard = () => {
               <CardDescription>Bookings by bus type</CardDescription>
             </CardHeader>
             <CardContent className="h-80 flex items-center justify-center">
-              <PieChart 
+              <PieChart
                 data={busTypeData}
                 index="name"
                 categories={["value"]}

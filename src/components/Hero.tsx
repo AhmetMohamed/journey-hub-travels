@@ -1,9 +1,14 @@
-
 import React, { useState } from "react";
 import { MapPin, Calendar, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -17,31 +22,35 @@ const Hero: React.FC = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Form validation
     if (!departure.trim() || !destination.trim() || !date.trim()) {
       toast({
         title: "Missing information",
         description: "Please fill out all required fields",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
-    
+
     // In a real app, this would call an API endpoint
     // We'll redirect to schedules page with query parameters
-    navigate(`/schedules?from=${departure}&to=${destination}&date=${date}&passengers=${passengers}`);
+    navigate(
+      `/schedules?from=${departure}&to=${destination}&date=${date}&passengers=${passengers}`
+    );
   };
 
   return (
     <div className="relative bg-bus-800 text-white">
       {/* Background with overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-bus-800/90 to-bus-800/70 z-0"></div>
-      
+
       {/* Background image would be here in production */}
       <div className="relative z-10 px-4 py-20 md:py-32 max-w-7xl mx-auto">
         <div className="text-center mb-8 animate-fade-in">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4">Your Journey Begins Here</h1>
+          <h1 className="text-4xl md:text-6xl font-bold mb-4">
+            Your Journey Begins Here
+          </h1>
           <p className="text-xl md:text-2xl max-w-3xl mx-auto">
             Discover affordable and comfortable bus travel across all regions
           </p>
@@ -52,7 +61,10 @@ const Hero: React.FC = () => {
           <form onSubmit={handleSearch} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label htmlFor="departure" className="text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="departure"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Departure
                 </label>
                 <div className="relative">
@@ -60,16 +72,19 @@ const Hero: React.FC = () => {
                   <Input
                     id="departure"
                     placeholder="From: City or Station"
-                    className="pl-10 bg-gray-50"
+                    className="pl-10 bg-gray-5 text-black"
                     value={departure}
                     onChange={(e) => setDeparture(e.target.value)}
                     required
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
-                <label htmlFor="destination" className="text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="destination"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Destination
                 </label>
                 <div className="relative">
@@ -77,16 +92,19 @@ const Hero: React.FC = () => {
                   <Input
                     id="destination"
                     placeholder="To: City or Station"
-                    className="pl-10 bg-gray-50"
+                    className="pl-10 bg-gray-50 text-black"
                     value={destination}
                     onChange={(e) => setDestination(e.target.value)}
                     required
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
-                <label htmlFor="date" className="text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="date"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Travel Date
                 </label>
                 <div className="relative">
@@ -94,23 +112,23 @@ const Hero: React.FC = () => {
                   <Input
                     id="date"
                     type="date"
-                    className="pl-10 bg-gray-50"
+                    className="pl-10 bg-gray-50 text-black"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                     required
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
-                <label htmlFor="passengers" className="text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="passengers"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Passengers
                 </label>
-                <Select
-                  value={passengers}
-                  onValueChange={setPassengers}
-                >
-                  <SelectTrigger className="bg-gray-50">
+                <Select value={passengers} onValueChange={setPassengers}>
+                  <SelectTrigger className="bg-gray-50 text-black">
                     <SelectValue placeholder="Number of passengers" />
                   </SelectTrigger>
                   <SelectContent>
@@ -123,10 +141,10 @@ const Hero: React.FC = () => {
                 </Select>
               </div>
             </div>
-            
+
             <div className="flex justify-center">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="bg-bus-800 hover:bg-bus-700 w-full md:w-auto text-white py-6 px-8 text-lg"
               >
                 <Search className="mr-2 h-5 w-5" />

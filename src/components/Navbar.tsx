@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, User, Search, Bus, LogOut } from "lucide-react";
@@ -33,29 +32,47 @@ const Navbar: React.FC = () => {
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
             <Bus className="h-6 w-6 text-bus-800" />
-            <span className="text-xl font-bold text-bus-800">JourneyHub</span>
+            <span className="text-xl font-bold text-bus-800">Sahal Bus</span>
           </Link>
         </div>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
-          <Link to="/" className="text-sm font-medium hover:text-bus-800 transition-colors">
+          <Link
+            to="/"
+            className="text-sm font-medium hover:text-bus-800 transition-colors"
+          >
             Home
           </Link>
-          <Link to="/routes" className="text-sm font-medium hover:text-bus-800 transition-colors">
+          <Link
+            to="/routes"
+            className="text-sm font-medium hover:text-bus-800 transition-colors"
+          >
             Routes
           </Link>
-          <Link to="/schedules" className="text-sm font-medium hover:text-bus-800 transition-colors">
+          <Link
+            to="/schedules"
+            className="text-sm font-medium hover:text-bus-800 transition-colors"
+          >
             Schedules
           </Link>
-          <Link to="/about" className="text-sm font-medium hover:text-bus-800 transition-colors">
+          <Link
+            to="/about"
+            className="text-sm font-medium hover:text-bus-800 transition-colors"
+          >
             About
           </Link>
-          <Link to="/contact" className="text-sm font-medium hover:text-bus-800 transition-colors">
+          <Link
+            to="/contact"
+            className="text-sm font-medium hover:text-bus-800 transition-colors"
+          >
             Contact
           </Link>
-          {isAuthenticated && user?.role === 'admin' && (
-            <Link to="/admin" className="text-sm font-medium hover:text-bus-800 transition-colors">
+          {isAuthenticated && user?.role === "admin" && (
+            <Link
+              to="/admin"
+              className="text-sm font-medium hover:text-bus-800 transition-colors"
+            >
               Admin
             </Link>
           )}
@@ -63,17 +80,21 @@ const Navbar: React.FC = () => {
 
         {/* Desktop Action Buttons */}
         <div className="hidden md:flex items-center gap-4">
-          <Button variant="outline" size="sm" className="flex items-center gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1"
+          >
             <Search className="h-4 w-4" />
             <span>Search</span>
           </Button>
-          
+
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button className="bg-bus-800 hover:bg-bus-700 text-white">
                   <User className="mr-2 h-4 w-4" />
-                  <span>{user?.firstName || 'User'}</span>
+                  <span>{user?.firstName || "User"}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -81,20 +102,26 @@ const Navbar: React.FC = () => {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>Profile</DropdownMenuItem>
                 <DropdownMenuItem>Bookings</DropdownMenuItem>
-                {user?.role === 'admin' && (
-                  <DropdownMenuItem onClick={() => navigate('/admin')}>
+                {user?.role === "admin" && (
+                  <DropdownMenuItem onClick={() => navigate("/admin")}>
                     Admin Dashboard
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="text-red-600"
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Logout</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button className="bg-bus-800 hover:bg-bus-700 text-white" onClick={() => navigate('/login')}>
+            <Button
+              className="bg-bus-800 hover:bg-bus-700 text-white"
+              onClick={() => navigate("/login")}
+            >
               <User className="mr-2 h-4 w-4" />
               <span>Sign In</span>
             </Button>
@@ -149,7 +176,7 @@ const Navbar: React.FC = () => {
               >
                 Contact
               </Link>
-              {isAuthenticated && user?.role === 'admin' && (
+              {isAuthenticated && user?.role === "admin" && (
                 <Link
                   to="/admin"
                   className="text-lg font-medium hover:text-bus-800 transition-colors"
@@ -164,9 +191,9 @@ const Navbar: React.FC = () => {
                   <Search className="mr-2 h-4 w-4" />
                   <span>Search</span>
                 </Button>
-                
+
                 {isAuthenticated ? (
-                  <Button 
+                  <Button
                     className="w-full bg-red-600 hover:bg-red-700 justify-start"
                     onClick={() => {
                       handleLogout();
@@ -177,10 +204,10 @@ const Navbar: React.FC = () => {
                     <span>Logout</span>
                   </Button>
                 ) : (
-                  <Button 
+                  <Button
                     className="w-full bg-bus-800 hover:bg-bus-700 justify-start"
                     onClick={() => {
-                      navigate('/login');
+                      navigate("/login");
                       toggleMenu();
                     }}
                   >
