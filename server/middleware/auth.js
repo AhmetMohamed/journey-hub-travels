@@ -1,25 +1,24 @@
+const jwt = require("jsonwebtoken");
 
-const jwt = require('jsonwebtoken');
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret'; // Use environment variable in production
+const JWT_SECRET = process.env.JWT_SECRET || "JWT_SECRET_KEY"; // Use environment variable in production
 
 module.exports = (req, res, next) => {
   // Get token from header
-  const token = req.header('x-auth-token');
+  const token = req.header("x-auth-token");
 
   // Check if no token
   if (!token) {
-    return res.status(401).json({ message: 'No token, authorization denied' });
+    return res.status(401).json({ message: "No token, authorization denied" });
   }
 
   try {
     // Verify token
     const decoded = jwt.verify(token, JWT_SECRET);
-    
+
     // Add user from payload
     req.user = decoded;
     next();
   } catch (error) {
-    res.status(401).json({ message: 'Token is not valid' });
+    res.status(401).json({ message: "Token is not valid" });
   }
 };
