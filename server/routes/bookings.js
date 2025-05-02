@@ -17,6 +17,10 @@ router.post('/', auth, async (req, res) => {
     }
     
     // Check if seats are available
+    if (!schedule.bookedSeats) {
+      schedule.bookedSeats = [];
+    }
+    
     const bookedSeatsSet = new Set(schedule.bookedSeats);
     for (const seat of seatNumbers) {
       if (bookedSeatsSet.has(seat)) {
@@ -37,11 +41,14 @@ router.post('/', auth, async (req, res) => {
     
     // Update schedule's booked seats
     schedule.bookedSeats = [...schedule.bookedSeats, ...seatNumbers];
-    schedule.availableSeats = schedule.totalSeats - schedule.bookedSeats.length;
+    schedule.availableSeats = schedule.availableSeats - seatNumbers.length;
     await schedule.save();
     
     // Populate schedule details for response
-    await savedBooking.populate('schedule').execPopulate();
+    await savedBooking.populate({
+      path: 'schedule',
+      populate: { path: 'route' }
+    });
     
     res.status(201).json(savedBooking);
   } catch (error) {
@@ -126,10 +133,14 @@ router.put('/:id/cancel', auth, async (req, res) => {
     // Update schedule's booked seats
     const schedule = await Schedule.findById(booking.schedule);
     if (schedule) {
+      if (!schedule.bookedSeats) {
+        schedule.bookedSeats = [];
+      }
+      
       schedule.bookedSeats = schedule.bookedSeats.filter(
         seat => !booking.seatNumbers.includes(seat)
       );
-      schedule.availableSeats = schedule.totalSeats - schedule.bookedSeats.length;
+      schedule.availableSeats = schedule.availableSeats + booking.seatNumbers.length;
       await schedule.save();
     }
     
@@ -162,18 +173,26 @@ router.put('/:id/status', auth, async (req, res) => {
       // Cancelling booking - make seats available
       const schedule = await Schedule.findById(booking.schedule);
       if (schedule) {
+        if (!schedule.bookedSeats) {
+          schedule.bookedSeats = [];
+        }
+        
         schedule.bookedSeats = schedule.bookedSeats.filter(
           seat => !booking.seatNumbers.includes(seat)
         );
-        schedule.availableSeats = schedule.totalSeats - schedule.bookedSeats.length;
+        schedule.availableSeats = schedule.availableSeats + booking.seatNumbers.length;
         await schedule.save();
       }
     } else if (booking.status === 'cancelled' && status !== 'cancelled') {
       // Un-cancelling booking - make seats unavailable again
       const schedule = await Schedule.findById(booking.schedule);
       if (schedule) {
+        if (!schedule.bookedSeats) {
+          schedule.bookedSeats = [];
+        }
+        
         schedule.bookedSeats = [...schedule.bookedSeats, ...booking.seatNumbers];
-        schedule.availableSeats = schedule.totalSeats - schedule.bookedSeats.length;
+        schedule.availableSeats = schedule.availableSeats - booking.seatNumbers.length;
         await schedule.save();
       }
     }

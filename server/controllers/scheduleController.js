@@ -61,10 +61,15 @@ exports.createSchedule = async (req, res) => {
       bus,
       price,
       availableSeats,
-      totalSeats
+      totalSeats,
+      bookedSeats: [] // Initialize empty bookedSeats array
     });
 
     const schedule = await newSchedule.save();
+    
+    // Populate the route information before sending the response
+    await schedule.populate('route', 'name origin destination');
+    
     res.status(201).json(schedule);
   } catch (error) {
     console.error(error);
@@ -98,7 +103,7 @@ exports.updateSchedule = async (req, res) => {
     if (isActive !== undefined) scheduleFields.isActive = isActive;
 
     // Find and update
-    const schedule = await Schedule.findByIdAndUpdate(
+    let schedule = await Schedule.findByIdAndUpdate(
       req.params.id,
       { $set: scheduleFields },
       { new: true }
@@ -108,6 +113,9 @@ exports.updateSchedule = async (req, res) => {
       return res.status(404).json({ message: 'Schedule not found' });
     }
 
+    // Populate the route information before sending the response
+    schedule = await Schedule.findById(schedule._id).populate('route', 'name origin destination');
+    
     res.json(schedule);
   } catch (error) {
     console.error(error);
@@ -118,17 +126,14 @@ exports.updateSchedule = async (req, res) => {
 // Delete schedule
 exports.deleteSchedule = async (req, res) => {
   try {
-    const schedule = await Schedule.findById(req.params.id);
+    // Use findByIdAndDelete instead of just changing isActive to properly remove from DB
+    const schedule = await Schedule.findByIdAndDelete(req.params.id);
     
     if (!schedule) {
       return res.status(404).json({ message: 'Schedule not found' });
     }
 
-    // Soft delete - just mark as inactive
-    schedule.isActive = false;
-    await schedule.save();
-
-    res.json({ message: 'Schedule removed' });
+    res.json({ message: 'Schedule removed', scheduleId: req.params.id });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });

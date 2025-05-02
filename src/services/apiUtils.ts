@@ -7,6 +7,8 @@ export const API_BASE_URL = "http://localhost:3000"; // Empty for relative URLs 
 // Helper function to handle fetch errors
 export const handleResponse = async (response: Response) => {
   if (!response.ok) {
+    console.error("API error:", response.status, response.statusText);
+    
     // Try to get error details from response
     try {
       const errorData = await response.json();
@@ -26,8 +28,13 @@ export const handleResponse = async (response: Response) => {
 // Get token from localStorage with more robust handling
 export const getAuthHeader = () => {
   const token = localStorage.getItem("token");
+  console.log("Auth token from localStorage:", token ? "Found" : "Not found");
+  
   // Return Authorization header if token exists
-  return token ? { "x-auth-token": token, "Authorization": `Bearer ${token}` } : {};
+  return token ? { 
+    "Authorization": `Bearer ${token}`,
+    "x-auth-token": token
+  } : {};
 };
 
 // Utility function to ensure authenticated requests
@@ -53,6 +60,25 @@ export const authenticatedFetch = async (
     
     if (!response.ok) {
       console.error("API request failed with status:", response.status, response.statusText);
+      
+      // Special handling for 401 Unauthorized errors
+      if (response.status === 401) {
+        // Clear invalid token and notify user
+        console.warn("Authentication error, clearing token");
+        localStorage.removeItem("token");
+        toast({
+          title: "Authentication Error",
+          description: "Your session has expired. Please login again.",
+          variant: "destructive",
+        });
+        
+        // Redirect to login page after a short delay
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 2000);
+        
+        throw new Error("Authentication failed. Please login again.");
+      }
     }
     
     return await handleResponse(response);

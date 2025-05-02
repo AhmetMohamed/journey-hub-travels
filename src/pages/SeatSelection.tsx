@@ -47,6 +47,7 @@ const SeatSelection = () => {
   const [seatMap, setSeatMap] = useState<Seat[]>([]);
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [bookingInProgress, setBookingInProgress] = useState(false);
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -100,7 +101,7 @@ const SeatSelection = () => {
       seats.push({
         id: `seat-${i}`,
         number: seatNumber,
-        isAvailable: !bookedSeats.includes(seatNumber)
+        isAvailable: !bookedSeats?.includes(seatNumber)
       });
     }
     
@@ -127,6 +128,8 @@ const SeatSelection = () => {
       return;
     }
 
+    setBookingInProgress(true);
+    
     try {
       if (!scheduleId || !schedule) {
         throw new Error('Invalid schedule data');
@@ -154,6 +157,8 @@ const SeatSelection = () => {
         description: "There was an error processing your booking. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setBookingInProgress(false);
     }
   };
 
@@ -267,10 +272,10 @@ const SeatSelection = () => {
                 </div>
                 <Button 
                   className="w-full mt-4" 
-                  disabled={selectedSeats.length === 0}
+                  disabled={selectedSeats.length === 0 || bookingInProgress}
                   onClick={handleBooking}
                 >
-                  Complete Booking
+                  {bookingInProgress ? "Processing..." : "Complete Booking"}
                 </Button>
               </CardContent>
             </Card>

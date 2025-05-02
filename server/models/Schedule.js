@@ -32,6 +32,10 @@ const scheduleSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  bookedSeats: {
+    type: [String],
+    default: []
+  },
   isActive: {
     type: Boolean,
     default: true
