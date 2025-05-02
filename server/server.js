@@ -1,4 +1,3 @@
-
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -10,6 +9,7 @@ const scheduleRoutes = require("./routes/schedules");
 const bookingRoutes = require("./routes/bookings");
 const statsRoutes = require("./routes/stats");
 const reportsRoutes = require("./routes/reports");
+const userRoutes = require("./routes/users");
 
 // Load environment variables
 dotenv.config();
@@ -28,6 +28,7 @@ app.use("/api/schedules", scheduleRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/reports", reportsRoutes);
+app.use("/api/users", userRoutes);
 
 // Serve static files from the React app in production
 if (process.env.NODE_ENV === "production") {

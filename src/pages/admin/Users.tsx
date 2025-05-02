@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,66 +34,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/components/ui/use-toast';
-import { Edit, Trash2, MoreHorizontal, Plus, Search, UserPlus } from 'lucide-react';
+import { Edit, Trash2, MoreHorizontal, Search, UserPlus } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { userApi, User } from '@/services/userApi';
 
-// Mock data for users
-const initialUsers = [
-  {
-    id: 1,
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    role: 'user',
-    createdAt: '2025-01-15T12:00:00'
-  },
-  {
-    id: 2,
-    firstName: 'Jane',
-    lastName: 'Smith',
-    email: 'jane.smith@example.com',
-    role: 'user',
-    createdAt: '2025-02-10T14:30:00'
-  },
-  {
-    id: 3,
-    firstName: 'Admin',
-    lastName: 'User',
-    email: 'admin@example.com',
-    role: 'admin',
-    createdAt: '2024-12-01T09:15:00'
-  },
-  {
-    id: 4,
-    firstName: 'Michael',
-    lastName: 'Brown',
-    email: 'michael.brown@example.com',
-    role: 'user',
-    createdAt: '2025-03-05T16:45:00'
-  },
-  {
-    id: 5,
-    firstName: 'Sarah',
-    lastName: 'Wilson',
-    email: 'sarah.wilson@example.com',
-    role: 'user',
-    createdAt: '2025-03-20T10:20:00'
-  }
-];
-
-interface User {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: string;
-  createdAt: string;
-}
-
-const emptyUser: User = {
-  id: 0,
+const emptyUser = {
+  _id: '',
   firstName: '',
   lastName: '',
   email: '',
@@ -101,13 +50,48 @@ const emptyUser: User = {
 };
 
 const AdminUsers = () => {
-  const [users, setUsers] = useState<User[]>(initialUsers);
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<User>(emptyUser);
   const [isEditing, setIsEditing] = useState(false);
+  const [password, setPassword] = useState('');
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Query users from the API
+  const { data: users = [], isLoading, error } = useQuery({
+    queryKey: ['users'],
+    queryFn: userApi.getAllUsers,
+  });
+
+  // Create user mutation
+  const createMutation = useMutation({
+    mutationFn: (userData: Omit<User, '_id' | 'createdAt'>) => userApi.createUser(userData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      setIsDialogOpen(false);
+    }
+  });
+
+  // Update user mutation
+  const updateMutation = useMutation({
+    mutationFn: ({ id, userData }: { id: string, userData: Partial<User> }) => 
+      userApi.updateUser(id, userData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      setIsDialogOpen(false);
+    }
+  });
+
+  // Delete user mutation
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => userApi.deleteUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      setIsDeleteDialogOpen(false);
+    }
+  });
 
   // Format date for display
   const formatDate = (dateStr: string) => {
@@ -135,16 +119,15 @@ const AdminUsers = () => {
   );
 
   const handleAddUserClick = () => {
-    setCurrentUser({
-      ...emptyUser,
-      createdAt: new Date().toISOString()
-    });
+    setCurrentUser({...emptyUser});
+    setPassword('');
     setIsEditing(false);
     setIsDialogOpen(true);
   };
 
   const handleEditUserClick = (user: User) => {
     setCurrentUser(user);
+    setPassword('');
     setIsEditing(true);
     setIsDialogOpen(true);
   };
@@ -184,50 +167,58 @@ const AdminUsers = () => {
       return;
     }
 
-    // Check for duplicate email
-    const duplicateEmail = users.find(user => 
-      user.email === currentUser.email && user.id !== currentUser.id
-    );
-    
-    if (duplicateEmail) {
-      toast({
-        title: "Email already exists",
-        description: "This email is already registered",
-        variant: "destructive"
-      });
-      return;
-    }
-
     if (isEditing) {
       // Update existing user
-      setUsers(users.map(user => 
-        user.id === currentUser.id ? currentUser : user
-      ));
-      toast({
-        title: "User updated",
-        description: `${currentUser.firstName} ${currentUser.lastName}'s profile has been updated`
+      const userData: Partial<User> = {
+        firstName: currentUser.firstName,
+        lastName: currentUser.lastName,
+        email: currentUser.email,
+        role: currentUser.role
+      };
+      
+      if (password) {
+        userData.password = password;
+      }
+      
+      updateMutation.mutate({ 
+        id: currentUser._id, 
+        userData 
       });
     } else {
       // Add new user
-      const newId = Math.max(...users.map(user => user.id)) + 1;
-      setUsers([...users, { ...currentUser, id: newId }]);
-      toast({
-        title: "User added",
-        description: `${currentUser.firstName} ${currentUser.lastName} has been added`
+      createMutation.mutate({
+        firstName: currentUser.firstName,
+        lastName: currentUser.lastName,
+        email: currentUser.email,
+        role: currentUser.role,
+        password
       });
     }
-
-    setIsDialogOpen(false);
   };
 
   const handleDeleteUser = () => {
-    setUsers(users.filter(user => user.id !== currentUser.id));
-    toast({
-      title: "User deleted",
-      description: `${currentUser.firstName} ${currentUser.lastName} has been deleted`
-    });
-    setIsDeleteDialogOpen(false);
+    deleteMutation.mutate(currentUser._id);
   };
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <div className="p-6 flex justify-center items-center">
+          <p>Loading users...</p>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminLayout>
+        <div className="p-6 flex justify-center items-center">
+          <p>Error loading users. Please try again later.</p>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -263,43 +254,44 @@ const AdminUsers = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="flex items-center">
-                    <Avatar className="h-9 w-9 mr-3 bg-bus-800 text-white">
-                      <AvatarFallback>{getUserInitials(user.firstName, user.lastName)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-medium">{user.firstName} {user.lastName}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    <Badge variant={user.role === 'admin' ? 'destructive' : 'secondary'} className="capitalize">
-                      {user.role}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{formatDate(user.createdAt)}</TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleEditUserClick(user)}>
-                          <Edit className="h-4 w-4 mr-2" /> Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDeleteUserClick(user)} className="text-red-600">
-                          <Trash2 className="h-4 w-4 mr-2" /> Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {filteredUsers.length === 0 && (
+              {filteredUsers.length > 0 ? (
+                filteredUsers.map((user) => (
+                  <TableRow key={user._id}>
+                    <TableCell className="flex items-center">
+                      <Avatar className="h-9 w-9 mr-3 bg-bus-800 text-white">
+                        <AvatarFallback>{getUserInitials(user.firstName, user.lastName)}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium">{user.firstName} {user.lastName}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      <Badge variant={user.role === 'admin' ? 'destructive' : 'secondary'} className="capitalize">
+                        {user.role}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{formatDate(user.createdAt)}</TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleEditUserClick(user)}>
+                            <Edit className="h-4 w-4 mr-2" /> Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDeleteUserClick(user)} className="text-red-600">
+                            <Trash2 className="h-4 w-4 mr-2" /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                     No users found
@@ -369,26 +361,33 @@ const AdminUsers = () => {
               </Select>
             </div>
 
-            {!isEditing && (
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder={isEditing ? '(unchanged)' : ''}
-                />
+            <div className="space-y-2">
+              <Label htmlFor="password">
+                {isEditing ? 'New Password (leave blank to keep current)' : 'Password'}
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={isEditing ? '(unchanged)' : ''}
+              />
+              {!isEditing && (
                 <p className="text-xs text-muted-foreground">
-                  {isEditing 
-                    ? 'Leave blank to keep current password' 
-                    : 'Password will be auto-generated and sent to user if left blank'
-                  }
+                  Password will be auto-generated if left blank
                 </p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleDialogClose}>Cancel</Button>
-            <Button className="bg-bus-800" onClick={handleSaveUser}>Save</Button>
+            <Button 
+              className="bg-bus-800" 
+              onClick={handleSaveUser}
+              disabled={createMutation.isPending || updateMutation.isPending}
+            >
+              {createMutation.isPending || updateMutation.isPending ? 'Saving...' : 'Save'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -405,7 +404,13 @@ const AdminUsers = () => {
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={handleDeleteDialogClose}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDeleteUser}>Delete</Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteUser}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
