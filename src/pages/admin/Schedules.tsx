@@ -37,7 +37,7 @@ import { Edit, Trash2, MoreHorizontal, Plus, Search, AlertCircle } from 'lucide-
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { schedulesApi, routesApi } from '@/services/api';
+import { schedulesApi, routesApi } from '@/services';
 import { formatDate, formatTime } from '@/lib/utils/dateUtils';
 
 interface Route {

@@ -21,7 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { Calendar, Search, Check, X } from 'lucide-react';
-import { bookingsApi } from '@/services/api';
+import { bookingsApi } from '@/services';
 import { formatDate, formatTime } from '@/lib/utils/dateUtils';
 
 interface Booking {

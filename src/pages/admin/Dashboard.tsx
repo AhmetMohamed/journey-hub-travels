@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { BarChart, PieChart, LineChart } from "@/components/ui/chart";
 import { useAuth } from "@/contexts/AuthContext";
-import { dashboardApi } from "@/services/api";
+import { dashboardApi } from "@/services";
 import { useToast } from "@/components/ui/use-toast";
 
 interface DashboardStats {

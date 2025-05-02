@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -29,7 +28,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Edit, Trash2, MoreHorizontal, Plus, Search } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { routesApi } from '@/services/api';
+import { routesApi } from '@/services';
 
 interface Route {
   _id: string;

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import {
@@ -16,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BarChart, LineChart } from '@/components/ui/chart';
 import { useToast } from '@/components/ui/use-toast';
 import { Download } from 'lucide-react';
-import { reportsApi } from '@/services/api';
+import { reportsApi } from '@/services';
 
 interface ReportData {
   name: string;
