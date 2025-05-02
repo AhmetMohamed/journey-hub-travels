@@ -9,6 +9,7 @@ export interface User {
   email: string;
   role: string;
   createdAt: string;
+  password?: string; // Added password as optional property
 }
 
 export const userApi = {
