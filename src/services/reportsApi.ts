@@ -1,6 +1,6 @@
 
 import { toast } from "@/components/ui/use-toast";
-import { API_BASE_URL, handleResponse, getAuthHeader } from './apiUtils';
+import { API_BASE_URL, handleResponse, getAuthHeader, authenticatedFetch } from './apiUtils';
 
 export const reportsApi = {
   generateReport: async (reportType: string, dateRange: string, customDates?: { startDate: string, endDate: string }) => {
@@ -11,18 +11,10 @@ export const reportsApi = {
         url += `&startDate=${customDates.startDate}&endDate=${customDates.endDate}`;
       }
       
-      const response = await fetch(url, {
-        headers: getAuthHeader()
-      });
-      return await handleResponse(response);
+      return await authenticatedFetch(url);
     } catch (error) {
       console.error('Error generating report:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to generate report. Please try again.',
-        variant: 'destructive',
-      });
-      throw error;
+      throw error; // authenticatedFetch already handles the toast notification
     }
   },
   
@@ -34,9 +26,8 @@ export const reportsApi = {
         url += `&startDate=${customDates.startDate}&endDate=${customDates.endDate}`;
       }
       
-      const response = await fetch(url, {
-        headers: getAuthHeader()
-      });
+      const headers = getAuthHeader();
+      const response = await fetch(url, { headers });
       
       if (!response.ok) {
         const error = await response.json().catch(() => ({

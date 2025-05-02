@@ -1,6 +1,6 @@
 
 import { toast } from "@/components/ui/use-toast";
-import { API_BASE_URL, handleResponse, getAuthHeader } from './apiUtils';
+import { API_BASE_URL, handleResponse, getAuthHeader, authenticatedFetch } from './apiUtils';
 
 export const routesApi = {
   getAllRoutes: async () => {
@@ -35,63 +35,42 @@ export const routesApi = {
   
   createRoute: async (routeData: any) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/routes`, {
+      return await authenticatedFetch(`${API_BASE_URL}/api/routes`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...getAuthHeader()
         },
         body: JSON.stringify(routeData)
       });
-      return await handleResponse(response);
     } catch (error) {
       console.error('Error creating route:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to create route. Please try again.',
-        variant: 'destructive',
-      });
-      throw error;
+      throw error; // authenticatedFetch already handles the toast notification
     }
   },
   
   updateRoute: async (id: string, routeData: any) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/routes/${id}`, {
+      return await authenticatedFetch(`${API_BASE_URL}/api/routes/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          ...getAuthHeader()
         },
         body: JSON.stringify(routeData)
       });
-      return await handleResponse(response);
     } catch (error) {
       console.error(`Error updating route ${id}:`, error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update route. Please try again.',
-        variant: 'destructive',
-      });
-      throw error;
+      throw error; // authenticatedFetch already handles the toast notification
     }
   },
   
   deleteRoute: async (id: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/routes/${id}`, {
-        method: 'DELETE',
-        headers: getAuthHeader()
+      return await authenticatedFetch(`${API_BASE_URL}/api/routes/${id}`, {
+        method: 'DELETE'
       });
-      return await handleResponse(response);
     } catch (error) {
       console.error(`Error deleting route ${id}:`, error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete route. Please try again.',
-        variant: 'destructive',
-      });
-      throw error;
+      throw error; // authenticatedFetch already handles the toast notification
     }
   }
 };
