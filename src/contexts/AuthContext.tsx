@@ -32,6 +32,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
         setIsAuthenticated(true);
+        console.log("Auth restored from localStorage:", { user: parsedUser, token: token.substring(0, 10) + '...' });
       } catch (error) {
         console.error('Error parsing user data:', error);
         localStorage.removeItem('token');
@@ -41,6 +42,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = (token: string, userData: User) => {
+    console.log("Login called with token and user:", { token: token.substring(0, 10) + '...', user: userData });
     setUser(userData);
     setIsAuthenticated(true);
     localStorage.setItem('token', token);

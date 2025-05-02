@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -35,7 +36,6 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      // Real API implementation would look like:
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: {
@@ -50,6 +50,11 @@ const Login = () => {
       }
 
       const data = await response.json();
+      
+      // Log the token for debugging
+      console.log("Received token:", data.token);
+      
+      // Store token and login
       login(data.token, data.user);
 
       toast({
@@ -58,7 +63,7 @@ const Login = () => {
       });
 
       // Redirect to original destination or home
-      navigate("/");
+      navigate(from);
     } catch (error: any) {
       toast({
         title: "Login Failed",

@@ -1,3 +1,4 @@
+
 import { toast } from "@/components/ui/use-toast";
 
 // API configuration
@@ -9,7 +10,7 @@ export const handleResponse = async (response: Response) => {
     // Try to get error details from response
     try {
       const errorData = await response.json();
-      throw new Error(errorData.message || `Error: ${response.status}`);
+      throw new Error(errorData.message || `Error: ${response.status} ${response.statusText}`);
     } catch (error) {
       // If parsing JSON fails, use status text
       throw new Error(
@@ -26,7 +27,7 @@ export const handleResponse = async (response: Response) => {
 export const getAuthHeader = () => {
   const token = localStorage.getItem("token");
   // Return Authorization header if token exists
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  return token ? { "x-auth-token": token, "Authorization": `Bearer ${token}` } : {};
 };
 
 // Utility function to ensure authenticated requests
@@ -34,16 +35,26 @@ export const authenticatedFetch = async (
   url: string,
   options: RequestInit = {}
 ) => {
+  // Ensure headers object exists
   const headers = {
-    ...options.headers,
+    ...(options.headers || {}),
     ...getAuthHeader(),
+    "Content-Type": "application/json"
   };
 
   try {
+    console.log("Making authenticated request to:", url);
+    console.log("With auth headers:", getAuthHeader());
+    
     const response = await fetch(url, {
       ...options,
       headers,
     });
+    
+    if (!response.ok) {
+      console.error("API request failed with status:", response.status, response.statusText);
+    }
+    
     return await handleResponse(response);
   } catch (error) {
     console.error("API request failed:", error);

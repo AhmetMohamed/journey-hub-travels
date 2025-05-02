@@ -1,13 +1,18 @@
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const path = require("path");
 const authRoutes = require("./routes/auth");
 const routeRoutes = require("./routes/routes");
 const scheduleRoutes = require("./routes/schedules");
 const bookingRoutes = require("./routes/bookings");
 const statsRoutes = require("./routes/stats");
 const reportsRoutes = require("./routes/reports");
+
+// Load environment variables
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -34,16 +39,16 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
+// MongoDB Connection URL - use environment variable if available
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://sahaltransportbus:sahal2025@cluster0.kpkxz12.mongodb.net/sahal-bus";
+
 // Connect to MongoDB
 mongoose
-  .connect(
-    "mongodb+srv://sahaltransportbus:sahal2025@cluster0.kpkxz12.mongodb.net/sahal-bus",
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  )
-  .then(() => console.log("Connected to MongoDB"))
+  .connect(MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("Connected to MongoDB at", MONGODB_URI))
   .catch((err) => console.error("Could not connect to MongoDB", err));
 
 app.listen(PORT, () => {
