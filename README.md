@@ -1,73 +1,41 @@
-# Welcome to your Lovable project
 
-## Project info
+# BusGo - Bus Booking System
 
-**URL**: https://lovable.dev/projects/bb3fe8a7-a949-4d5a-98ba-83928c8b9e71
+## Project Structure
 
-## How can I edit this code?
+This project is organized into two main directories:
 
-There are several ways of editing your application.
+- `client`: Contains all frontend code built with React, TypeScript, and Tailwind CSS
+- `server`: Contains all backend code built with Express, MongoDB, and Node.js
 
-**Use Lovable**
+## Deployment on Vercel
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/bb3fe8a7-a949-4d5a-98ba-83928c8b9e71) and start prompting.
+This project is configured for deployment on Vercel:
 
-Changes made via Lovable will be committed automatically to this repo.
+1. Connect your GitHub repository to Vercel
+2. Set the following environment variables in your Vercel project:
+   - `MONGODB_URI`: Your MongoDB connection string
+   - `JWT_SECRET`: Secret for JWT token generation
 
-**Use your preferred IDE**
+## Local Development
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+To run the project locally:
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+1. Start the backend server:
+   ```bash
+   cd server
+   npm install
+   npm run dev
+   ```
 
-Follow these steps:
+2. Start the frontend development server:
+   ```bash
+   npm install
+   npm run dev
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+3. Access the application at `http://localhost:8080`
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## API Endpoints
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/bb3fe8a7-a949-4d5a-98ba-83928c8b9e71) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+See `server/README.md` for a complete list of API endpoints.

@@ -1,3 +1,4 @@
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -18,7 +19,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.NODE_ENV === "production" 
+    ? "https://yourverceldeployment.vercel.app" // Replace with your Vercel domain
+    : "http://localhost:8080",
+  credentials: true
+}));
 app.use(express.json());
 
 // Routes
@@ -32,11 +38,18 @@ app.use("/api/users", userRoutes);
 
 // Serve static files from the React app in production
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static("dist"));
-
-  // Handle React routing, return all requests to React app
+  // Since we're using Vercel's routing, we don't need to serve static files directly
+  // But we'll handle the API routes not found case
+  app.use("/api/*", (req, res) => {
+    res.status(404).json({ message: "API endpoint not found" });
+  });
+} else {
+  // For local development, serve static files
+  app.use(express.static(path.join(__dirname, "../client/dist")));
+  
+  // Handle React routing for local development
   app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../dist/index.html"));
+    res.sendFile(path.join(__dirname, "../client/dist/index.html"));
   });
 }
 
@@ -52,6 +65,12 @@ mongoose
   .then(() => console.log("Connected to MongoDB at", MONGODB_URI))
   .catch((err) => console.error("Could not connect to MongoDB", err));
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// For Vercel, export the Express app as a module
+module.exports = app;
+
+// Only listen on a port if this file is run directly (not when imported by Vercel)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}

@@ -1,8 +1,9 @@
-
 import { toast } from "@/components/ui/use-toast";
 
 // API configuration
-export const API_BASE_URL = "http://localhost:3000"; // Empty for relative URLs on same domain
+export const API_BASE_URL = process.env.NODE_ENV === "production" 
+  ? "https://yourverceldeployment.vercel.app"  // Replace with your actual Vercel domain
+  : "http://localhost:3000"; 
 
 // Helper function to handle fetch errors
 export const handleResponse = async (response: Response) => {
