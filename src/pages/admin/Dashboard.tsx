@@ -12,7 +12,6 @@ import { BarChart, PieChart, LineChart } from "@/components/ui/chart";
 import { useAuth } from "@/contexts/AuthContext";
 import { dashboardApi } from "@/services";
 import { useToast } from "@/components/ui/use-toast";
-import { schedulesApi } from "@/services/schedulesApi";
 
 interface DashboardStats {
   totalBookings: number;
@@ -23,7 +22,7 @@ interface DashboardStats {
   routesAdded: number;
 }
 
-interface ScheduleData {
+interface ChartData {
   name: string;
   value: number;
 }
@@ -40,10 +39,10 @@ const AdminDashboard = () => {
     bookingsTrend: 0,
     routesAdded: 0
   });
-  const [revenueData, setRevenueData] = useState<{ name: string; value: number }[]>([]);
-  const [bookingsTrendData, setBookingsTrendData] = useState<{ name: string; value: number }[]>([]);
-  const [routeUsageData, setRouteUsageData] = useState<{ name: string; value: number }[]>([]);
-  const [scheduleData, setScheduleData] = useState<ScheduleData[]>([]);
+  const [revenueData, setRevenueData] = useState<ChartData[]>([]);
+  const [bookingsTrendData, setBookingsTrendData] = useState<ChartData[]>([]);
+  const [routeUsageData, setRouteUsageData] = useState<ChartData[]>([]);
+  const [scheduleData, setScheduleData] = useState<ChartData[]>([]);
   
   useEffect(() => {
     fetchDashboardData();
@@ -53,7 +52,7 @@ const AdminDashboard = () => {
     setLoading(true);
     try {
       // Fetch all dashboard data in parallel
-      const [statsData, revenueData, bookingsTrend, routeUsage] = await Promise.all([
+      const [statsData, revenueData, bookingsTrend, routeUsage, scheduleDistribution] = await Promise.all([
         dashboardApi.getStats().catch(() => ({
           totalBookings: 120,
           revenue: 12500,
@@ -64,16 +63,17 @@ const AdminDashboard = () => {
         })),
         dashboardApi.getRevenueData(),
         dashboardApi.getBookingsTrend(),
-        dashboardApi.getRouteUsage()
+        dashboardApi.getRouteUsage(),
+        dashboardApi.getScheduleDistribution()
       ]);
       
       setStats(statsData);
       setRevenueData(revenueData);
       setBookingsTrendData(bookingsTrend);
       setRouteUsageData(routeUsage);
+      setScheduleData(scheduleDistribution);
       
-      // Fetch schedules for pie chart
-      await fetchScheduleData();
+      console.log("Schedule distribution data loaded:", scheduleDistribution);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
       toast({
@@ -92,56 +92,6 @@ const AdminDashboard = () => {
       ]);
     } finally {
       setLoading(false);
-    }
-  };
-  
-  const fetchScheduleData = async () => {
-    try {
-      const schedules = await schedulesApi.getAllSchedules();
-      
-      // Process schedule data for pie chart
-      const scheduleTypes: Record<string, number> = {};
-      
-      schedules.forEach((schedule: any) => {
-        const time = new Date(schedule.departureTime).getHours();
-        let timeCategory;
-        
-        if (time >= 5 && time < 12) {
-          timeCategory = "Morning (5AM-12PM)";
-        } else if (time >= 12 && time < 17) {
-          timeCategory = "Afternoon (12PM-5PM)";
-        } else if (time >= 17 && time < 22) {
-          timeCategory = "Evening (5PM-10PM)";
-        } else {
-          timeCategory = "Night (10PM-5AM)";
-        }
-        
-        if (!scheduleTypes[timeCategory]) {
-          scheduleTypes[timeCategory] = 0;
-        }
-        scheduleTypes[timeCategory]++;
-      });
-      
-      const chartData = Object.entries(scheduleTypes).map(([name, value]) => ({ 
-        name, 
-        value 
-      }));
-      
-      setScheduleData(chartData.length > 0 ? chartData : [
-        { name: 'Morning (5AM-12PM)', value: 35 },
-        { name: 'Afternoon (12PM-5PM)', value: 40 },
-        { name: 'Evening (5PM-10PM)', value: 20 },
-        { name: 'Night (10PM-5AM)', value: 5 }
-      ]);
-    } catch (error) {
-      console.error('Error fetching schedule data:', error);
-      // Set fallback data
-      setScheduleData([
-        { name: 'Morning (5AM-12PM)', value: 35 },
-        { name: 'Afternoon (12PM-5PM)', value: 40 },
-        { name: 'Evening (5PM-10PM)', value: 20 },
-        { name: 'Night (10PM-5AM)', value: 5 }
-      ]);
     }
   };
 

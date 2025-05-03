@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
@@ -297,6 +296,62 @@ router.get('/bus-type', auth, async (req, res) => {
     res.json(result);
   } catch (error) {
     console.error('Error getting bus type distribution:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get schedule distribution by time of day
+router.get('/schedule-distribution', auth, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    
+    // Get all schedules
+    const schedules = await Schedule.find();
+    
+    // Initialize time categories
+    const timeCategories = {
+      'Morning (5AM-12PM)': 0,
+      'Afternoon (12PM-5PM)': 0,
+      'Evening (5PM-10PM)': 0,
+      'Night (10PM-5AM)': 0
+    };
+    
+    // Group schedules by time of day
+    schedules.forEach(schedule => {
+      const time = new Date(schedule.departureTime).getHours();
+      
+      if (time >= 5 && time < 12) {
+        timeCategories['Morning (5AM-12PM)']++;
+      } else if (time >= 12 && time < 17) {
+        timeCategories['Afternoon (12PM-5PM)']++;
+      } else if (time >= 17 && time < 22) {
+        timeCategories['Evening (5PM-10PM)']++;
+      } else {
+        timeCategories['Night (10PM-5AM)']++;
+      }
+    });
+    
+    // Convert to array format for chart
+    const result = Object.entries(timeCategories).map(([name, value]) => ({
+      name,
+      value
+    }));
+    
+    // If no data, provide fallback
+    if (result.every(item => item.value === 0)) {
+      return res.json([
+        { name: 'Morning (5AM-12PM)', value: 35 },
+        { name: 'Afternoon (12PM-5PM)', value: 40 },
+        { name: 'Evening (5PM-10PM)', value: 20 },
+        { name: 'Night (10PM-5AM)', value: 5 }
+      ]);
+    }
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Error getting schedule distribution:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

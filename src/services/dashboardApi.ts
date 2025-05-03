@@ -52,16 +52,17 @@ export const dashboardApi = {
     }
   },
   
-  getBusTypeDistribution: async () => {
+  getScheduleDistribution: async () => {
     try {
-      const data = await authenticatedFetch(`${API_BASE_URL}/api/stats/bus-type`);
+      const data = await authenticatedFetch(`${API_BASE_URL}/api/stats/schedule-distribution`);
+      console.log("Fetched schedule distribution data:", data);
       if (!data || !Array.isArray(data) || data.length === 0) {
-        return generateFakeBusTypeData();
+        return generateFakeScheduleData();
       }
       return data;
     } catch (error) {
-      console.error('Error fetching bus type distribution:', error);
-      return generateFakeBusTypeData();
+      console.error('Error fetching schedule distribution:', error);
+      return generateFakeScheduleData();
     }
   }
 };
@@ -97,10 +98,11 @@ function generateFakeRouteUsageData() {
   }));
 }
 
-function generateFakeBusTypeData() {
+function generateFakeScheduleData() {
   return [
-    { name: 'Standard', value: 45 },
-    { name: 'Express', value: 30 },
-    { name: 'Premium', value: 25 }
+    { name: 'Morning (5AM-12PM)', value: 35 },
+    { name: 'Afternoon (12PM-5PM)', value: 40 },
+    { name: 'Evening (5PM-10PM)', value: 20 },
+    { name: 'Night (10PM-5AM)', value: 5 }
   ];
 }
