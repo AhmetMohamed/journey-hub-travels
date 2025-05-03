@@ -33,7 +33,7 @@ export const reportsApi = {
     }
   },
   
-  downloadReport: async (reportType: string, dateRange: string, format: string = 'csv', customDates?: { startDate: string, endDate: string }) => {
+  downloadReport: async (reportType: string, dateRange: string, format: string = 'xlsx', customDates?: { startDate: string, endDate: string }) => {
     try {
       let url = `${API_BASE_URL}/api/reports/${reportType}/download?format=${format}&dateRange=${dateRange}`;
       
@@ -73,7 +73,7 @@ export const reportsApi = {
     }
   },
   
-  downloadAllReports: async (dateRange: string, format: string = 'csv', customDates?: { startDate: string, endDate: string }) => {
+  downloadAllReports: async (dateRange: string, format: string = 'xlsx', customDates?: { startDate: string, endDate: string }) => {
     try {
       let url = `${API_BASE_URL}/api/reports/all/download?format=${format}&dateRange=${dateRange}`;
       

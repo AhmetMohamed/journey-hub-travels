@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart, LineChart } from '@/components/ui/chart';
 import { useToast } from '@/components/ui/use-toast';
-import { Download, FileBarChart } from 'lucide-react';
+import { Download, FileBarChart, FileSpreadsheet } from 'lucide-react';
 import { reportsApi } from '@/services';
 
 interface ReportData {
@@ -40,6 +40,7 @@ const AdminReports = () => {
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [reportData, setReportData] = useState<ReportData[]>([]);
+  const [downloadFormat, setDownloadFormat] = useState<"csv" | "xlsx">("xlsx");
   const [stats, setStats] = useState<ReportStats>({
     totalRevenue: 0,
     totalBookings: 0,
@@ -119,16 +120,16 @@ const AdminReports = () => {
         : undefined;
       
       if (reportType === 'all') {
-        await reportsApi.downloadAllReports(dateRange, 'csv', customDates);
+        await reportsApi.downloadAllReports(dateRange, downloadFormat, customDates);
         toast({
           title: "Download Started",
-          description: "All reports are being downloaded as CSV.",
+          description: `All reports are being downloaded as ${downloadFormat.toUpperCase()}.`,
         });
       } else {
-        await reportsApi.downloadReport(reportType, dateRange, 'csv', customDates);
+        await reportsApi.downloadReport(reportType, dateRange, downloadFormat, customDates);
         toast({
           title: "Download Started",
-          description: "Your report is being downloaded as CSV.",
+          description: `Your report is being downloaded as ${downloadFormat.toUpperCase()}.`,
         });
       }
     } catch (error) {
@@ -261,6 +262,22 @@ const AdminReports = () => {
                   {generating ? "Generating..." : "Generate Report"}
                 </Button>
                 
+                <div className="space-y-2">
+                  <Label htmlFor="download-format">Download Format</Label>
+                  <Select 
+                    value={downloadFormat} 
+                    onValueChange={(value) => setDownloadFormat(value as "csv" | "xlsx")}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select format" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="csv">CSV</SelectItem>
+                      <SelectItem value="xlsx">Excel (XLSX)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
                 <Button
                   type="button"
                   variant="outline"
@@ -268,8 +285,12 @@ const AdminReports = () => {
                   onClick={downloadReport}
                   disabled={generating || loading}
                 >
-                  <Download className="mr-2 h-4 w-4" />
-                  Download CSV
+                  {downloadFormat === "xlsx" ? (
+                    <FileSpreadsheet className="mr-2 h-4 w-4" />
+                  ) : (
+                    <Download className="mr-2 h-4 w-4" />
+                  )}
+                  Download {downloadFormat.toUpperCase()}
                 </Button>
 
                 {reportType === 'all' && (

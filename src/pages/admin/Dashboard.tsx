@@ -12,6 +12,7 @@ import { BarChart, PieChart, LineChart } from "@/components/ui/chart";
 import { useAuth } from "@/contexts/AuthContext";
 import { dashboardApi } from "@/services";
 import { useToast } from "@/components/ui/use-toast";
+import { schedulesApi } from "@/services/schedulesApi";
 
 interface DashboardStats {
   totalBookings: number;
@@ -20,6 +21,11 @@ interface DashboardStats {
   customerSatisfaction: number;
   bookingsTrend: number;
   routesAdded: number;
+}
+
+interface ScheduleData {
+  name: string;
+  value: number;
 }
 
 const AdminDashboard = () => {
@@ -37,7 +43,7 @@ const AdminDashboard = () => {
   const [revenueData, setRevenueData] = useState<{ name: string; value: number }[]>([]);
   const [bookingsTrendData, setBookingsTrendData] = useState<{ name: string; value: number }[]>([]);
   const [routeUsageData, setRouteUsageData] = useState<{ name: string; value: number }[]>([]);
-  const [busTypeData, setBusTypeData] = useState<{ name: string; value: number }[]>([]);
+  const [scheduleData, setScheduleData] = useState<ScheduleData[]>([]);
   
   useEffect(() => {
     fetchDashboardData();
@@ -47,7 +53,7 @@ const AdminDashboard = () => {
     setLoading(true);
     try {
       // Fetch all dashboard data in parallel
-      const [statsData, revenueData, bookingsTrend, routeUsage, busTypeDistribution] = await Promise.all([
+      const [statsData, revenueData, bookingsTrend, routeUsage] = await Promise.all([
         dashboardApi.getStats().catch(() => ({
           totalBookings: 120,
           revenue: 12500,
@@ -58,15 +64,16 @@ const AdminDashboard = () => {
         })),
         dashboardApi.getRevenueData(),
         dashboardApi.getBookingsTrend(),
-        dashboardApi.getRouteUsage(),
-        dashboardApi.getBusTypeDistribution()
+        dashboardApi.getRouteUsage()
       ]);
       
       setStats(statsData);
       setRevenueData(revenueData);
       setBookingsTrendData(bookingsTrend);
       setRouteUsageData(routeUsage);
-      setBusTypeData(busTypeDistribution);
+      
+      // Fetch schedules for pie chart
+      await fetchScheduleData();
     } catch (error) {
       console.error('Error loading dashboard data:', error);
       toast({
@@ -83,14 +90,58 @@ const AdminDashboard = () => {
         { name: 'May', value: 2100 },
         { name: 'Jun', value: 2800 }
       ]);
-      
-      setBusTypeData([
-        { name: 'Standard', value: 45 },
-        { name: 'Express', value: 30 },
-        { name: 'Premium', value: 25 }
-      ]);
     } finally {
       setLoading(false);
+    }
+  };
+  
+  const fetchScheduleData = async () => {
+    try {
+      const schedules = await schedulesApi.getAllSchedules();
+      
+      // Process schedule data for pie chart
+      const scheduleTypes: Record<string, number> = {};
+      
+      schedules.forEach((schedule: any) => {
+        const time = new Date(schedule.departureTime).getHours();
+        let timeCategory;
+        
+        if (time >= 5 && time < 12) {
+          timeCategory = "Morning (5AM-12PM)";
+        } else if (time >= 12 && time < 17) {
+          timeCategory = "Afternoon (12PM-5PM)";
+        } else if (time >= 17 && time < 22) {
+          timeCategory = "Evening (5PM-10PM)";
+        } else {
+          timeCategory = "Night (10PM-5AM)";
+        }
+        
+        if (!scheduleTypes[timeCategory]) {
+          scheduleTypes[timeCategory] = 0;
+        }
+        scheduleTypes[timeCategory]++;
+      });
+      
+      const chartData = Object.entries(scheduleTypes).map(([name, value]) => ({ 
+        name, 
+        value 
+      }));
+      
+      setScheduleData(chartData.length > 0 ? chartData : [
+        { name: 'Morning (5AM-12PM)', value: 35 },
+        { name: 'Afternoon (12PM-5PM)', value: 40 },
+        { name: 'Evening (5PM-10PM)', value: 20 },
+        { name: 'Night (10PM-5AM)', value: 5 }
+      ]);
+    } catch (error) {
+      console.error('Error fetching schedule data:', error);
+      // Set fallback data
+      setScheduleData([
+        { name: 'Morning (5AM-12PM)', value: 35 },
+        { name: 'Afternoon (12PM-5PM)', value: 40 },
+        { name: 'Evening (5PM-10PM)', value: 20 },
+        { name: 'Night (10PM-5AM)', value: 5 }
+      ]);
     }
   };
 
@@ -227,16 +278,16 @@ const AdminDashboard = () => {
 
               <Card className="col-span-1">
                 <CardHeader>
-                  <CardTitle>Bus Type Distribution</CardTitle>
-                  <CardDescription>Bookings by bus type</CardDescription>
+                  <CardTitle>Schedule Distribution</CardTitle>
+                  <CardDescription>Schedules by time of day</CardDescription>
                 </CardHeader>
                 <CardContent className="h-80 flex items-center justify-center">
                   <PieChart
-                    data={busTypeData}
+                    data={scheduleData}
                     categories={["value"]}
-                    colors={["#6B7280", "#8B5CF6", "#10B981"]}
-                    valueFormatter={(value) => `${value}%`}
-                    className="max-w-sm mx-auto"
+                    colors={["#6B7280", "#8B5CF6", "#10B981", "#F59E0B"]}
+                    valueFormatter={(value) => `${value} schedules`}
+                    className="max-w-sm mx-auto animate-fade-in"
                   />
                 </CardContent>
               </Card>
