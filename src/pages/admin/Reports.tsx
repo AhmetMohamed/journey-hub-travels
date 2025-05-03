@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import {
@@ -14,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart, LineChart } from '@/components/ui/chart';
 import { useToast } from '@/components/ui/use-toast';
-import { Download } from 'lucide-react';
+import { Download, FileBarChart } from 'lucide-react';
 import { reportsApi } from '@/services';
 
 interface ReportData {
@@ -74,7 +75,12 @@ const AdminReports = () => {
         ? { startDate, endDate } 
         : undefined;
       
-      const data = await reportsApi.generateReport(reportType, dateRange, customDates);
+      let data;
+      if (reportType === 'all') {
+        data = await reportsApi.generateAllReports(dateRange, customDates);
+      } else {
+        data = await reportsApi.generateReport(reportType, dateRange, customDates);
+      }
       
       // Update stats
       if (data.stats) {
@@ -82,14 +88,17 @@ const AdminReports = () => {
       }
       
       // Set chart data
-      setReportData(data.chartData || []);
+      const chartData = data.chartData || [];
+      setReportData(chartData);
       
       toast({
         title: "Report Generated",
-        description: `${reportType.charAt(0).toUpperCase() + reportType.slice(1)} report for the selected period has been generated.`,
+        description: reportType === 'all' 
+          ? "All reports for the selected period have been generated." 
+          : `${reportType.charAt(0).toUpperCase() + reportType.slice(1)} report for the selected period has been generated.`,
       });
       
-      return data.chartData;
+      return chartData;
     } catch (error) {
       console.error('Error generating report:', error);
       toast({
@@ -108,13 +117,20 @@ const AdminReports = () => {
       const customDates = dateRange === 'custom' 
         ? { startDate, endDate } 
         : undefined;
-        
-      await reportsApi.downloadReport(reportType, dateRange, 'csv', customDates);
       
-      toast({
-        title: "Download Started",
-        description: "Your report is being downloaded as CSV.",
-      });
+      if (reportType === 'all') {
+        await reportsApi.downloadAllReports(dateRange, 'csv', customDates);
+        toast({
+          title: "Download Started",
+          description: "All reports are being downloaded as CSV.",
+        });
+      } else {
+        await reportsApi.downloadReport(reportType, dateRange, 'csv', customDates);
+        toast({
+          title: "Download Started",
+          description: "Your report is being downloaded as CSV.",
+        });
+      }
     } catch (error) {
       console.error('Error downloading report:', error);
       toast({
@@ -182,6 +198,7 @@ const AdminReports = () => {
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="all">All Reports</SelectItem>
                       <SelectItem value="revenue">Revenue Report</SelectItem>
                       <SelectItem value="bookings">Bookings Report</SelectItem>
                       <SelectItem value="occupancy">Occupancy Report</SelectItem>
@@ -254,6 +271,13 @@ const AdminReports = () => {
                   <Download className="mr-2 h-4 w-4" />
                   Download CSV
                 </Button>
+
+                {reportType === 'all' && (
+                  <div className="mt-2 text-sm text-center text-muted-foreground">
+                    <FileBarChart className="inline mr-1 h-4 w-4" />
+                    Generates all report types in one go
+                  </div>
+                )}
               </form>
             </CardContent>
           </Card>
@@ -262,6 +286,7 @@ const AdminReports = () => {
             <CardHeader>
               <CardTitle>Report Visualization</CardTitle>
               <CardDescription>
+                {reportType === 'all' && "Combined reports visualization"}
                 {reportType === 'revenue' && "Monthly revenue statistics"}
                 {reportType === 'bookings' && "Monthly booking statistics"}
                 {reportType === 'occupancy' && "Monthly occupancy rates"}
@@ -274,7 +299,11 @@ const AdminReports = () => {
                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-bus-500"></div>
                 </div>
               ) : (
-                <Tabs defaultValue={reportType} value={reportType} onValueChange={setReportType}>
+                <Tabs defaultValue={reportType === 'all' ? 'revenue' : reportType} value={reportType === 'all' ? 'revenue' : reportType} onValueChange={newValue => {
+                  if (newValue !== 'all') {
+                    setReportType(newValue);
+                  }
+                }}>
                   <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="revenue">Revenue</TabsTrigger>
                     <TabsTrigger value="bookings">Bookings</TabsTrigger>

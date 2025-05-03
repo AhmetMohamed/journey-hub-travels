@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
@@ -105,6 +104,32 @@ router.get('/:type', auth, async (req, res) => {
       
     const occupancyChange = 5; // Placeholder for now
     
+    // For "all" report type, return all data
+    if (type === 'all') {
+      const revenueData = generateTimeSeriesData(confirmedBookings, startDateTime, endDateTime, 'totalAmount');
+      const bookingsData = generateTimeSeriesData(confirmedBookings, startDateTime, endDateTime, 'count');
+      const occupancyData = generateOccupancyData(schedules, startDateTime, endDateTime);
+      const routeData = await generateRouteData(confirmedBookings);
+      
+      return res.json({
+        stats: {
+          totalRevenue,
+          totalBookings,
+          averageOccupancy,
+          revenueChange,
+          bookingsChange,
+          occupancyChange
+        },
+        allReports: {
+          revenue: revenueData,
+          bookings: bookingsData,
+          occupancy: occupancyData,
+          route: routeData
+        },
+        chartData: revenueData // Default to revenue data for initial visualization
+      });
+    }
+    
     // Chart data based on report type
     let chartData = [];
     
@@ -145,6 +170,29 @@ router.get('/:type', auth, async (req, res) => {
     });
   } catch (error) {
     console.error('Error generating report:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Download report endpoint
+router.get('/:type/download', auth, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    
+    const { type } = req.params;
+    const { format = 'csv', dateRange, startDate, endDate } = req.query;
+    
+    // Add logic for generating and downloading the report
+    // For now, we'll just send a success message
+    if (type === 'all') {
+      res.json({ message: 'All reports download would be implemented here' });
+    } else {
+      res.json({ message: `${type} report download would be implemented here` });
+    }
+  } catch (error) {
+    console.error('Error downloading report:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -250,12 +298,5 @@ async function generateRouteData(bookings) {
     .sort((a, b) => b.value - a.value)
     .slice(0, 10); // Top 10 routes
 }
-
-// Download report endpoint
-router.get('/:type/download', auth, async (req, res) => {
-  // This would generate a downloadable file in real implementation
-  // For this example, we'll just return a success message
-  res.json({ message: 'Report download would be implemented here' });
-});
 
 module.exports = router;

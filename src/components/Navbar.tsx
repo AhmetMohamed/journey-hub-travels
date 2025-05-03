@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/components/ui/use-toast';
+import { Avatar, AvatarFallback } from './ui/avatar';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,6 +40,10 @@ const Navbar = () => {
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
   ];
+
+  const getInitials = (name: string) => {
+    return name ? name.charAt(0).toUpperCase() : 'U';
+  };
 
   return (
     <nav className="bg-white shadow-sm border-b">
@@ -85,30 +90,49 @@ const Navbar = () => {
             {isAuthenticated && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center">
-                    <span className="font-medium mr-1">{user.firstName}</span>
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
+                  <button className="flex items-center gap-2 bg-gradient-to-r from-bus-700 to-bus-800 text-white rounded-full pl-3 pr-2 py-1.5 hover:shadow-lg transition-all duration-300 ring-offset-2 hover:ring-2 ring-bus-300 hover:opacity-90">
+                    <span className="font-medium text-sm">{user.firstName}</span>
+                    <Avatar className="h-7 w-7 border-2 border-white bg-bus-600">
+                      <AvatarFallback className="text-xs bg-bus-600 text-white">
+                        {getInitials(user.firstName)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => navigate('/profile')}>
+                <DropdownMenuContent align="end" className="w-56 mt-1 p-1">
+                  <div className="flex items-center gap-2 p-2 mb-1 bg-bus-50 rounded-md">
+                    <Avatar className="h-9 w-9 border border-bus-100">
+                      <AvatarFallback className="bg-bus-600 text-white">
+                        {getInitials(user.firstName)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                      <span className="font-medium text-sm">{`${user.firstName} ${user.lastName}`}</span>
+                      <span className="text-xs text-muted-foreground">{user.email}</span>
+                    </div>
+                  </div>
+                  
+                  <DropdownMenuItem className="py-2 cursor-pointer" onClick={() => navigate('/profile')}>
                     <User className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/booking-history')}>
+                  
+                  <DropdownMenuItem className="py-2 cursor-pointer" onClick={() => navigate('/booking-history')}>
                     <History className="mr-2 h-4 w-4" />
                     <span>Booking History</span>
                   </DropdownMenuItem>
+                  
                   {user.role === 'admin' && (
                     <>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => navigate('/admin')}>
+                      <DropdownMenuItem className="py-2 cursor-pointer font-medium" onClick={() => navigate('/admin')}>
                         <span>Admin Dashboard</span>
                       </DropdownMenuItem>
                     </>
                   )}
+                  
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                  <DropdownMenuItem className="py-2 cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50" onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Logout</span>
                   </DropdownMenuItem>
@@ -159,11 +183,20 @@ const Navbar = () => {
           <div className="pt-4 pb-3 border-t border-gray-200">
             {isAuthenticated && user ? (
               <>
-                <div className="px-4 py-2">
-                  <p className="text-base font-medium text-gray-800">
-                    {user.firstName} {user.lastName}
-                  </p>
-                  <p className="text-sm font-medium text-gray-500">{user.email}</p>
+                <div className="flex items-center px-4 py-2 bg-bus-50">
+                  <div className="flex-shrink-0">
+                    <Avatar className="h-10 w-10 border-2 border-white">
+                      <AvatarFallback className="bg-bus-600 text-white">
+                        {getInitials(user.firstName)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-base font-medium text-gray-800">
+                      {user.firstName} {user.lastName}
+                    </p>
+                    <p className="text-sm font-medium text-gray-500">{user.email}</p>
+                  </div>
                 </div>
                 <div className="mt-2 space-y-1">
                   <Link
@@ -194,7 +227,7 @@ const Navbar = () => {
                       handleLogout();
                       setIsOpen(false);
                     }}
-                    className="block w-full text-left px-4 py-2 text-base font-medium text-red-500 hover:text-red-800 hover:bg-gray-100"
+                    className="block w-full text-left px-4 py-2 text-base font-medium text-red-600 hover:text-red-800 hover:bg-red-50"
                   >
                     Logout
                   </button>
