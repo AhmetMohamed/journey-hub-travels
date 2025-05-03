@@ -1,3 +1,4 @@
+
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
@@ -184,12 +185,103 @@ router.get('/:type/download', auth, async (req, res) => {
     const { type } = req.params;
     const { format = 'csv', dateRange, startDate, endDate } = req.query;
     
-    // Add logic for generating and downloading the report
-    // For now, we'll just send a success message
+    // Calculate date range for filtering
+    let startDateTime, endDateTime;
+    
+    switch (dateRange) {
+      case 'last7days':
+        startDateTime = new Date();
+        startDateTime.setDate(startDateTime.getDate() - 7);
+        endDateTime = new Date();
+        break;
+      case 'last30days':
+        startDateTime = new Date();
+        startDateTime.setDate(startDateTime.getDate() - 30);
+        endDateTime = new Date();
+        break;
+      case 'last90days':
+        startDateTime = new Date();
+        startDateTime.setDate(startDateTime.getDate() - 90);
+        endDateTime = new Date();
+        break;
+      case 'thisYear':
+        startDateTime = new Date(new Date().getFullYear(), 0, 1);
+        endDateTime = new Date();
+        break;
+      case 'custom':
+        if (!startDate || !endDate) {
+          return res.status(400).json({ message: 'Start and end dates are required for custom range' });
+        }
+        startDateTime = new Date(startDate);
+        endDateTime = new Date(endDate);
+        endDateTime.setDate(endDateTime.getDate() + 1); // Include the end date
+        break;
+      default:
+        startDateTime = new Date();
+        startDateTime.setDate(startDateTime.getDate() - 30); // Default to last 30 days
+        endDateTime = new Date();
+    }
+    
+    // Generate report data
+    let reportData;
+    
     if (type === 'all') {
-      res.json({ message: 'All reports download would be implemented here' });
+      const revenueData = generateTimeSeriesData(await Booking.find({ 
+        createdAt: { $gte: startDateTime, $lt: endDateTime },
+        status: { $in: ['confirmed', 'completed'] }
+      }), startDateTime, endDateTime, 'totalAmount');
+      
+      const bookingsData = generateTimeSeriesData(await Booking.find({ 
+        createdAt: { $gte: startDateTime, $lt: endDateTime },
+        status: { $in: ['confirmed', 'completed'] }
+      }), startDateTime, endDateTime, 'count');
+      
+      const occupancyData = generateOccupancyData(await Schedule.find(), startDateTime, endDateTime);
+      const routeData = await generateRouteData(await Booking.find({ 
+        createdAt: { $gte: startDateTime, $lt: endDateTime },
+        status: { $in: ['confirmed', 'completed'] }
+      }));
+      
+      reportData = {
+        revenue: revenueData,
+        bookings: bookingsData,
+        occupancy: occupancyData,
+        route: routeData
+      };
+      
+      res.json({ message: 'All reports data generated successfully', data: reportData });
     } else {
-      res.json({ message: `${type} report download would be implemented here` });
+      switch (type) {
+        case 'revenue':
+          reportData = generateTimeSeriesData(await Booking.find({ 
+            createdAt: { $gte: startDateTime, $lt: endDateTime },
+            status: { $in: ['confirmed', 'completed'] }
+          }), startDateTime, endDateTime, 'totalAmount');
+          break;
+        
+        case 'bookings':
+          reportData = generateTimeSeriesData(await Booking.find({ 
+            createdAt: { $gte: startDateTime, $lt: endDateTime },
+            status: { $in: ['confirmed', 'completed'] }
+          }), startDateTime, endDateTime, 'count');
+          break;
+        
+        case 'occupancy':
+          reportData = generateOccupancyData(await Schedule.find(), startDateTime, endDateTime);
+          break;
+        
+        case 'route':
+          reportData = await generateRouteData(await Booking.find({ 
+            createdAt: { $gte: startDateTime, $lt: endDateTime },
+            status: { $in: ['confirmed', 'completed'] }
+          }));
+          break;
+          
+        default:
+          return res.status(400).json({ message: 'Invalid report type' });
+      }
+      
+      res.json({ message: `${type} report data generated successfully`, data: reportData });
     }
   } catch (error) {
     console.error('Error downloading report:', error);

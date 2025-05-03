@@ -60,51 +60,51 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen flex bg-gray-100">
-      {/* Sidebar */}
+      {/* Sidebar with updated styling */}
       <div
-        className={`bg-white border-r transition-all duration-300 flex flex-col ${
+        className={`bg-gradient-to-b from-indigo-900 to-indigo-700 shadow-xl transition-all duration-300 flex flex-col ${
           sidebarOpen ? 'w-64' : 'w-20'
         }`}
       >
-        <div className="p-4 flex justify-between items-center">
-          <h1 className={`text-xl font-bold ${sidebarOpen ? 'block' : 'hidden'}`}>
-            Admin Panel
+        <div className="p-4 flex justify-between items-center border-b border-indigo-600">
+          <h1 className={`text-xl font-bold text-white ${sidebarOpen ? 'block' : 'hidden'}`}>
+            BusGo Admin
           </h1>
-          <Button variant="ghost" size="icon" onClick={toggleSidebar}>
+          <Button variant="ghost" size="icon" className="text-white hover:bg-indigo-600" onClick={toggleSidebar}>
             <Menu size={20} />
           </Button>
         </div>
 
         <div className="flex flex-col flex-1">
-          <nav className="flex-1">
+          <nav className="flex-1 pt-4">
             {menuItems.map((item) => (
               <Link to={item.path} key={item.path}>
                 <div
-                  className={`flex items-center px-4 py-3 hover:bg-gray-100 ${
+                  className={`flex items-center px-4 py-3 mb-2 mx-2 rounded-lg transition-all duration-200 ${
                     location.pathname === item.path
-                      ? 'bg-gray-100 border-l-4 border-blue-500'
-                      : ''
+                      ? 'bg-indigo-800 text-white'
+                      : 'text-indigo-100 hover:bg-indigo-800 hover:text-white'
                   }`}
                 >
-                  <span className="mr-3 text-gray-500">{item.icon}</span>
-                  {sidebarOpen && <span>{item.label}</span>}
+                  <span className="mr-3">{item.icon}</span>
+                  {sidebarOpen && <span className="font-medium">{item.label}</span>}
                 </div>
               </Link>
             ))}
           </nav>
           
-          <div className="p-4">
+          <div className="p-4 mt-auto border-t border-indigo-600">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="w-full relative flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg">
-                  <Avatar className="h-9 w-9">
+                <Button variant="ghost" className="w-full relative flex items-center gap-2 p-2 hover:bg-indigo-600 rounded-lg text-white">
+                  <Avatar className="h-9 w-9 border-2 border-white">
                     <AvatarImage src={user?.avatar} alt={`${user?.firstName} ${user?.lastName}`} />
-                    <AvatarFallback className="bg-purple-600 text-white">{initials}</AvatarFallback>
+                    <AvatarFallback className="bg-white text-indigo-800">{initials}</AvatarFallback>
                   </Avatar>
                   {sidebarOpen && (
                     <div className="flex flex-col items-start">
                       <span className="font-medium">{`${user?.firstName} ${user?.lastName}`}</span>
-                      <span className="text-xs text-gray-500">Administrator</span>
+                      <span className="text-xs text-indigo-200">Administrator</span>
                     </div>
                   )}
                 </Button>

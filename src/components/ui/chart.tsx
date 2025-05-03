@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 
@@ -504,6 +503,8 @@ export const PieChart = ({
       config={{}}
     >
       <RechartsPrimitive.PieChart 
+        width={500}  // Add explicit width
+        height={300}  // Add explicit height
         {...props}
       >
         <RechartsPrimitive.Tooltip
@@ -524,6 +525,9 @@ export const PieChart = ({
             outerRadius={80}
             fill={colors?.[index % (colors.length || 1)]}
             label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+            animationDuration={1000}
+            animationBegin={200}
+            isAnimationActive={true}
           />
         ))}
       </RechartsPrimitive.PieChart>

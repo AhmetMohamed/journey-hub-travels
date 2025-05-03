@@ -90,6 +90,14 @@ const AdminDashboard = () => {
         { name: 'May', value: 2100 },
         { name: 'Jun', value: 2800 }
       ]);
+      
+      // Set fallback schedule data
+      setScheduleData([
+        { name: 'Morning (5AM-12PM)', value: 35 },
+        { name: 'Afternoon (12PM-5PM)', value: 40 },
+        { name: 'Evening (5PM-10PM)', value: 20 },
+        { name: 'Night (10PM-5AM)', value: 5 }
+      ]);
     } finally {
       setLoading(false);
     }
@@ -231,14 +239,16 @@ const AdminDashboard = () => {
                   <CardTitle>Schedule Distribution</CardTitle>
                   <CardDescription>Schedules by time of day</CardDescription>
                 </CardHeader>
-                <CardContent className="h-80 flex items-center justify-center">
-                  <PieChart
-                    data={scheduleData}
-                    categories={["value"]}
-                    colors={["#6B7280", "#8B5CF6", "#10B981", "#F59E0B"]}
-                    valueFormatter={(value) => `${value} schedules`}
-                    className="max-w-sm mx-auto animate-fade-in"
-                  />
+                <CardContent className="h-80 flex items-center justify-center" style={{ minHeight: "300px" }}>
+                  {scheduleData && scheduleData.length > 0 && (
+                    <PieChart
+                      data={scheduleData}
+                      categories={["value"]}
+                      colors={["#6B7280", "#8B5CF6", "#10B981", "#F59E0B"]}
+                      valueFormatter={(value) => `${value} schedules`}
+                      className="max-w-sm mx-auto animate-fade-in"
+                    />
+                  )}
                 </CardContent>
               </Card>
             </div>

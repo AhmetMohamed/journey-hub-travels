@@ -56,9 +56,20 @@ export const dashboardApi = {
     try {
       const data = await authenticatedFetch(`${API_BASE_URL}/api/stats/schedule-distribution`);
       console.log("Fetched schedule distribution data:", data);
+      
+      // Make sure we have valid data format
       if (!data || !Array.isArray(data) || data.length === 0) {
+        console.log("Using fake schedule data because received data was invalid");
         return generateFakeScheduleData();
       }
+      
+      // Ensure data has the correct format (name and value properties)
+      const validData = data.every(item => item.name && typeof item.value === 'number');
+      if (!validData) {
+        console.log("Using fake schedule data because received data had incorrect format");
+        return generateFakeScheduleData();
+      }
+      
       return data;
     } catch (error) {
       console.error('Error fetching schedule distribution:', error);
