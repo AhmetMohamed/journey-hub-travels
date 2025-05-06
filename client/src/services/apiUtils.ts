@@ -6,7 +6,7 @@ import { toast } from "../components/ui/use-toast";
 //     ? window.location.origin // This will use the same origin as the frontend in production
 //     : "http://localhost:3000";
 export const API_BASE_URL =
-  process.env.NODE_ENV === "production"
+  process.env.NODE_ENV === "production" && process.env.API_SERVER_BASE_URL
     ? process.env.API_SERVER_BASE_URL // Correct source
     : "http://localhost:3000"; // Local fallback
 
