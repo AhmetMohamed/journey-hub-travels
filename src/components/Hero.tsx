@@ -65,7 +65,7 @@ const Hero: React.FC = () => {
             Your Journey Begins Here
           </h1>
           <p className="text-xl md:text-2xl max-w-3xl mx-auto text-white/90">
-            Discover affordable and comfortable bus travel across all regions
+            Discover affordable and comfortable bus travel across all regions with SahalBus
           </p>
         </div>
 

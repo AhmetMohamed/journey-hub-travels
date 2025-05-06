@@ -11,10 +11,10 @@ import {
   Menu, 
   Route, 
   Settings, 
-  User
+  User,
+  Bus
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   DropdownMenu,
@@ -67,9 +67,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         }`}
       >
         <div className="p-4 flex justify-between items-center border-b border-indigo-600">
-          <h1 className={`text-xl font-bold text-white ${sidebarOpen ? 'block' : 'hidden'}`}>
-            BusGo Admin
-          </h1>
+          <div className={`flex items-center ${sidebarOpen ? 'block' : 'hidden'}`}>
+            <Bus size={24} className="text-white mr-2" />
+            <h1 className="text-xl font-bold text-white">
+              SahalBus
+            </h1>
+          </div>
           <Button variant="ghost" size="icon" className="text-white hover:bg-indigo-600" onClick={toggleSidebar}>
             <Menu size={20} />
           </Button>

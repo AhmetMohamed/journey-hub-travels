@@ -12,7 +12,7 @@ const Footer: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Bus className="h-6 w-6" />
-              <span className="text-xl font-bold">JourneyHub</span>
+              <span className="text-xl font-bold">SahalBus</span>
             </div>
             <p className="text-gray-400 mb-6">
               Providing comfortable and affordable bus travel across all regions. Making your journey safer and more enjoyable.
@@ -92,8 +92,8 @@ const Footer: React.FC = () => {
               </li>
               <li className="flex items-center">
                 <Mail className="h-5 w-5 mr-2 text-gray-400" />
-                <a href="mailto:info@journeyhub.com" className="text-gray-400 hover:text-white transition-colors">
-                  info@journeyhub.com
+                <a href="mailto:info@sahalbus.com" className="text-gray-400 hover:text-white transition-colors">
+                  info@sahalbus.com
                 </a>
               </li>
             </ul>
@@ -102,7 +102,7 @@ const Footer: React.FC = () => {
         
         <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400 text-sm">
-            &copy; {new Date().getFullYear()} JourneyHub. All rights reserved.
+            &copy; {new Date().getFullYear()} SahalBus. All rights reserved.
           </p>
           <div className="mt-4 md:mt-0">
             <Link to="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors mr-6">

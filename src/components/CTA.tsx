@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -11,7 +12,7 @@ const CTA: React.FC = () => {
         </h2>
         <p className="text-lg mb-8 max-w-2xl mx-auto opacity-90">
           Book your bus tickets today and experience comfortable, affordable
-          regional travel with JourneyHub.
+          regional travel with SahalBus.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Button className="bg-white text-teal-800 hover:bg-gray-100 py-6 px-8 text-lg">
