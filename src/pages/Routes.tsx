@@ -38,6 +38,7 @@ const Routes = () => {
   const mapRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isMapLoading, setIsMapLoading] = useState(true);
 
   // Somaliland city coordinates
   const locations: Location[] = [
@@ -52,181 +53,400 @@ const Routes = () => {
   ];
 
   // Initialize the map
+  // useEffect(() => {
+  //   if (mapRef.current) {
+  //     // Create a basic SVG map
+  //     const mapContainer = mapRef.current;
+  //     const width = mapContainer.clientWidth;
+  //     const height = 400;
+
+  //     // Calculate map bounds
+  //     const minLng = Math.min(...locations.map((loc) => loc.lng)) - 1;
+  //     const maxLng = Math.max(...locations.map((loc) => loc.lng)) + 1;
+  //     const minLat = Math.min(...locations.map((loc) => loc.lat)) - 0.5;
+  //     const maxLat = Math.max(...locations.map((loc) => loc.lat)) + 0.5;
+
+  //     // Function to convert geo coordinates to SVG coordinates
+  //     const projectToSvg = (lat: number, lng: number) => {
+  //       const x = ((lng - minLng) / (maxLng - minLng)) * width;
+  //       const y = height - ((lat - minLat) / (maxLat - minLat)) * height;
+  //       return [x, y];
+  //     };
+
+  //     // Create SVG element
+  //     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  //     svg.setAttribute("width", "100%");
+  //     svg.setAttribute("height", `${height}px`);
+  //     svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+
+  //     // Add a background
+  //     const background = document.createElementNS(
+  //       "http://www.w3.org/2000/svg",
+  //       "rect"
+  //     );
+  //     background.setAttribute("width", "100%");
+  //     background.setAttribute("height", "100%");
+  //     background.setAttribute("fill", "#e5f7ff");
+  //     svg.appendChild(background);
+
+  //     // Create a group for the border outline (simplified Somaliland shape)
+  //     const border = document.createElementNS(
+  //       "http://www.w3.org/2000/svg",
+  //       "path"
+  //     );
+
+  //     // Very simplified border path (placeholder - not accurate)
+  //     const borderPoints = [
+  //       projectToSvg(11.5, 42.5),
+  //       projectToSvg(11.0, 44.0),
+  //       projectToSvg(10.5, 46.0),
+  //       projectToSvg(11.0, 48.0),
+  //       projectToSvg(10.0, 49.0),
+  //       projectToSvg(8.0, 48.0),
+  //       projectToSvg(8.0, 46.0),
+  //       projectToSvg(9.0, 44.0),
+  //       projectToSvg(9.0, 43.0),
+  //       projectToSvg(10.0, 43.0),
+  //       projectToSvg(11.0, 42.5),
+  //     ];
+
+  //     const path = `M${borderPoints
+  //       .map((point) => point.join(","))
+  //       .join(" L")} Z`;
+  //     border.setAttribute("d", path);
+  //     border.setAttribute("fill", "#f0f9ff");
+  //     border.setAttribute("stroke", "#93c5fd");
+  //     border.setAttribute("stroke-width", "2");
+  //     svg.appendChild(border);
+
+  //     // Add markers and labels for each location
+  //     locations.forEach((location, index) => {
+  //       const [x, y] = projectToSvg(location.lat, location.lng);
+
+  //       // Create marker group
+  //       const markerGroup = document.createElementNS(
+  //         "http://www.w3.org/2000/svg",
+  //         "g"
+  //       );
+
+  //       // Add pulse animation
+  //       const pulse = document.createElementNS(
+  //         "http://www.w3.org/2000/svg",
+  //         "circle"
+  //       );
+  //       pulse.setAttribute("cx", x.toString());
+  //       pulse.setAttribute("cy", y.toString());
+  //       pulse.setAttribute("r", "8");
+  //       pulse.setAttribute("fill", "rgba(30, 64, 175, 0.3)");
+  //       pulse.setAttribute("class", "pulse-animation");
+
+  //       // Add animation
+  //       const animatePulse = document.createElementNS(
+  //         "http://www.w3.org/2000/svg",
+  //         "animate"
+  //       );
+  //       animatePulse.setAttribute("attributeName", "r");
+  //       animatePulse.setAttribute("values", "8;16;8");
+  //       animatePulse.setAttribute("dur", "3s");
+  //       animatePulse.setAttribute("repeatCount", "indefinite");
+  //       pulse.appendChild(animatePulse);
+
+  //       const animateOpacity = document.createElementNS(
+  //         "http://www.w3.org/2000/svg",
+  //         "animate"
+  //       );
+  //       animateOpacity.setAttribute("attributeName", "opacity");
+  //       animateOpacity.setAttribute("values", "0.6;0.2;0.6");
+  //       animateOpacity.setAttribute("dur", "3s");
+  //       animateOpacity.setAttribute("repeatCount", "indefinite");
+  //       pulse.appendChild(animateOpacity);
+
+  //       markerGroup.appendChild(pulse);
+
+  //       // Add marker
+  //       const marker = document.createElementNS(
+  //         "http://www.w3.org/2000/svg",
+  //         "circle"
+  //       );
+  //       marker.setAttribute("cx", x.toString());
+  //       marker.setAttribute("cy", y.toString());
+  //       marker.setAttribute("r", "5");
+  //       marker.setAttribute("fill", "#1e40af");
+  //       marker.setAttribute("stroke", "white");
+  //       marker.setAttribute("stroke-width", "2");
+  //       markerGroup.appendChild(marker);
+
+  //       // Add label
+  //       const label = document.createElementNS(
+  //         "http://www.w3.org/2000/svg",
+  //         "text"
+  //       );
+  //       label.setAttribute("x", (x + 10).toString());
+  //       label.setAttribute("y", (y + 5).toString());
+  //       label.setAttribute("font-size", "12px");
+  //       label.setAttribute("font-family", "Arial, sans-serif");
+  //       label.setAttribute("fill", "#1e3a8a");
+  //       label.textContent = location.name;
+  //       markerGroup.appendChild(label);
+
+  //       // Make markers interactive
+  //       markerGroup.setAttribute("style", "cursor: pointer;");
+  //       markerGroup.addEventListener("click", () => {
+  //         toast({
+  //           title: location.name,
+  //           description: `View routes from ${location.name}`,
+  //         });
+  //         setSearchTerm(location.name);
+  //         handleSearch(new Event("submit") as any);
+  //       });
+
+  //       svg.appendChild(markerGroup);
+  //     });
+
+  //     // Add routes between major cities
+  //     const routePairs = [
+  //       ["Hargeisa", "Borama"],
+  //       ["Hargeisa", "Berbera"],
+  //       ["Hargeisa", "Burco"],
+  //       ["Hargeisa", "Gabiley"],
+  //       ["Hargeisa", "Wajale"],
+  //       ["Burco", "Erigavo"],
+  //       ["Burco", "Las anod"],
+  //     ];
+
+  //     // Draw route lines
+  //     routePairs.forEach((pair) => {
+  //       const from = locations.find((l) => l.name === pair[0]);
+  //       const to = locations.find((l) => l.name === pair[1]);
+
+  //       if (from && to) {
+  //         const [x1, y1] = projectToSvg(from.lat, from.lng);
+  //         const [x2, y2] = projectToSvg(to.lat, to.lng);
+
+  //         const line = document.createElementNS(
+  //           "http://www.w3.org/2000/svg",
+  //           "line"
+  //         );
+  //         line.setAttribute("x1", x1.toString());
+  //         line.setAttribute("y1", y1.toString());
+  //         line.setAttribute("x2", x2.toString());
+  //         line.setAttribute("y2", y2.toString());
+  //         line.setAttribute("stroke", "#93c5fd");
+  //         line.setAttribute("stroke-width", "2");
+  //         line.setAttribute("stroke-dasharray", "4,2");
+  //         svg.appendChild(line);
+  //       }
+  //     });
+
+  //     // Add the SVG to the container
+  //     mapContainer.innerHTML = "";
+  //     mapContainer.appendChild(svg);
+
+  //     // Add CSS for animations
+  //     const style = document.createElement("style");
+  //     style.textContent = `
+  //       @keyframes pulse {
+  //         0% { r: 5; opacity: 0.6; }
+  //         50% { r: 15; opacity: 0.2; }
+  //         100% { r: 5; opacity: 0.6; }
+  //       }
+  //       .pulse-animation {
+  //         animation: pulse 3s infinite;
+  //       }
+  //     `;
+  //     document.head.appendChild(style);
+  //   }
+  // }, [mapRef, toast]);
   useEffect(() => {
-    if (mapRef.current) {
-      // Create a basic SVG map
-      const mapContainer = mapRef.current;
-      const width = mapContainer.clientWidth;
-      const height = 400;
-      
-      // Calculate map bounds
-      const minLng = Math.min(...locations.map(loc => loc.lng)) - 1;
-      const maxLng = Math.max(...locations.map(loc => loc.lng)) + 1;
-      const minLat = Math.min(...locations.map(loc => loc.lat)) - 0.5;
-      const maxLat = Math.max(...locations.map(loc => loc.lat)) + 0.5;
-      
-      // Function to convert geo coordinates to SVG coordinates
-      const projectToSvg = (lat: number, lng: number) => {
-        const x = ((lng - minLng) / (maxLng - minLng)) * width;
-        const y = height - ((lat - minLat) / (maxLat - minLat)) * height;
-        return [x, y];
-      };
-      
-      // Create SVG element
-      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      svg.setAttribute("width", "100%");
-      svg.setAttribute("height", `${height}px`);
-      svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-      
-      // Add a background
-      const background = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-      background.setAttribute("width", "100%");
-      background.setAttribute("height", "100%");
-      background.setAttribute("fill", "#e5f7ff");
-      svg.appendChild(background);
-      
-      // Create a group for the border outline (simplified Somaliland shape)
-      const border = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      
-      // Very simplified border path (placeholder - not accurate)
-      const borderPoints = [
-        projectToSvg(11.5, 42.5),
-        projectToSvg(11.0, 44.0),
-        projectToSvg(10.5, 46.0),
-        projectToSvg(11.0, 48.0),
-        projectToSvg(10.0, 49.0),
-        projectToSvg(8.0, 48.0),
-        projectToSvg(8.0, 46.0),
-        projectToSvg(9.0, 44.0),
-        projectToSvg(9.0, 43.0),
-        projectToSvg(10.0, 43.0),
-        projectToSvg(11.0, 42.5),
-      ];
-      
-      const path = `M${borderPoints.map(point => point.join(',')).join(' L')} Z`;
-      border.setAttribute("d", path);
-      border.setAttribute("fill", "#f0f9ff");
-      border.setAttribute("stroke", "#93c5fd");
-      border.setAttribute("stroke-width", "2");
-      svg.appendChild(border);
-      
-      // Add markers and labels for each location
-      locations.forEach((location, index) => {
-        const [x, y] = projectToSvg(location.lat, location.lng);
-        
-        // Create marker group
-        const markerGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        
-        // Add pulse animation
-        const pulse = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        pulse.setAttribute("cx", x.toString());
-        pulse.setAttribute("cy", y.toString());
-        pulse.setAttribute("r", "8");
-        pulse.setAttribute("fill", "rgba(30, 64, 175, 0.3)");
-        pulse.setAttribute("class", "pulse-animation");
-        
-        // Add animation
-        const animatePulse = document.createElementNS("http://www.w3.org/2000/svg", "animate");
-        animatePulse.setAttribute("attributeName", "r");
-        animatePulse.setAttribute("values", "8;16;8");
-        animatePulse.setAttribute("dur", "3s");
-        animatePulse.setAttribute("repeatCount", "indefinite");
-        pulse.appendChild(animatePulse);
-        
-        const animateOpacity = document.createElementNS("http://www.w3.org/2000/svg", "animate");
-        animateOpacity.setAttribute("attributeName", "opacity");
-        animateOpacity.setAttribute("values", "0.6;0.2;0.6");
-        animateOpacity.setAttribute("dur", "3s");
-        animateOpacity.setAttribute("repeatCount", "indefinite");
-        pulse.appendChild(animateOpacity);
-        
-        markerGroup.appendChild(pulse);
-        
-        // Add marker
-        const marker = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        marker.setAttribute("cx", x.toString());
-        marker.setAttribute("cy", y.toString());
-        marker.setAttribute("r", "5");
-        marker.setAttribute("fill", "#1e40af");
-        marker.setAttribute("stroke", "white");
-        marker.setAttribute("stroke-width", "2");
-        markerGroup.appendChild(marker);
-        
-        // Add label
-        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        label.setAttribute("x", (x + 10).toString());
-        label.setAttribute("y", (y + 5).toString());
-        label.setAttribute("font-size", "12px");
-        label.setAttribute("font-family", "Arial, sans-serif");
-        label.setAttribute("fill", "#1e3a8a");
-        label.textContent = location.name;
-        markerGroup.appendChild(label);
-        
-        // Make markers interactive
-        markerGroup.setAttribute("style", "cursor: pointer;");
-        markerGroup.addEventListener("click", () => {
-          toast({
-            title: location.name,
-            description: `View routes from ${location.name}`,
-          });
-          setSearchTerm(location.name);
-          handleSearch(new Event("submit") as any);
+    if (!mapRef.current || !locations.length) return;
+
+    setIsMapLoading(true);
+
+    const mapContainer = mapRef.current;
+    const width = mapContainer.clientWidth;
+    const height = 400;
+
+    const minLng = Math.min(...locations.map((loc) => loc.lng)) - 1;
+    const maxLng = Math.max(...locations.map((loc) => loc.lng)) + 1;
+    const minLat = Math.min(...locations.map((loc) => loc.lat)) - 0.5;
+    const maxLat = Math.max(...locations.map((loc) => loc.lat)) + 0.5;
+
+    const projectToSvg = (lat: number, lng: number) => {
+      const x = ((lng - minLng) / (maxLng - minLng)) * width;
+      const y = height - ((lat - minLat) / (maxLat - minLat)) * height;
+      return [x, y];
+    };
+
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("width", "100%");
+    svg.setAttribute("height", `${height}px`);
+    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+
+    const background = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "rect"
+    );
+    background.setAttribute("width", "100%");
+    background.setAttribute("height", "100%");
+    background.setAttribute("fill", "#e5f7ff");
+    svg.appendChild(background);
+
+    const border = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "path"
+    );
+    const borderPoints = [
+      projectToSvg(11.5, 42.5),
+      projectToSvg(11.0, 44.0),
+      projectToSvg(10.5, 46.0),
+      projectToSvg(11.0, 48.0),
+      projectToSvg(10.0, 49.0),
+      projectToSvg(8.0, 48.0),
+      projectToSvg(8.0, 46.0),
+      projectToSvg(9.0, 44.0),
+      projectToSvg(9.0, 43.0),
+      projectToSvg(10.0, 43.0),
+      projectToSvg(11.0, 42.5),
+    ];
+    const path = `M${borderPoints
+      .map((point) => point.join(","))
+      .join(" L")} Z`;
+    border.setAttribute("d", path);
+    border.setAttribute("fill", "#f0f9ff");
+    border.setAttribute("stroke", "#93c5fd");
+    border.setAttribute("stroke-width", "2");
+    svg.appendChild(border);
+
+    locations.forEach((location) => {
+      const [x, y] = projectToSvg(location.lat, location.lng);
+      const markerGroup = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "g"
+      );
+
+      const pulse = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "circle"
+      );
+      pulse.setAttribute("cx", x.toString());
+      pulse.setAttribute("cy", y.toString());
+      pulse.setAttribute("r", "8");
+      pulse.setAttribute("fill", "rgba(30, 64, 175, 0.3)");
+      pulse.setAttribute("class", "pulse-animation");
+
+      const animatePulse = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "animate"
+      );
+      animatePulse.setAttribute("attributeName", "r");
+      animatePulse.setAttribute("values", "8;16;8");
+      animatePulse.setAttribute("dur", "3s");
+      animatePulse.setAttribute("repeatCount", "indefinite");
+      pulse.appendChild(animatePulse);
+
+      const animateOpacity = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "animate"
+      );
+      animateOpacity.setAttribute("attributeName", "opacity");
+      animateOpacity.setAttribute("values", "0.6;0.2;0.6");
+      animateOpacity.setAttribute("dur", "3s");
+      animateOpacity.setAttribute("repeatCount", "indefinite");
+      pulse.appendChild(animateOpacity);
+
+      markerGroup.appendChild(pulse);
+
+      const marker = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "circle"
+      );
+      marker.setAttribute("cx", x.toString());
+      marker.setAttribute("cy", y.toString());
+      marker.setAttribute("r", "5");
+      marker.setAttribute("fill", "#1e40af");
+      marker.setAttribute("stroke", "white");
+      marker.setAttribute("stroke-width", "2");
+      markerGroup.appendChild(marker);
+
+      const label = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "text"
+      );
+      label.setAttribute("x", (x + 10).toString());
+      label.setAttribute("y", (y + 5).toString());
+      label.setAttribute("font-size", "12px");
+      label.setAttribute("font-family", "Arial, sans-serif");
+      label.setAttribute("fill", "#1e3a8a");
+      label.textContent = location.name;
+      markerGroup.appendChild(label);
+
+      markerGroup.setAttribute("style", "cursor: pointer;");
+      markerGroup.addEventListener("click", () => {
+        toast({
+          title: location.name,
+          description: `View routes from ${location.name}`,
         });
-        
-        svg.appendChild(markerGroup);
+        setSearchTerm(location.name);
+        handleSearch(new Event("submit") as any);
       });
-      
-      // Add routes between major cities
-      const routePairs = [
-        ["Hargeisa", "Borama"],
-        ["Hargeisa", "Berbera"],
-        ["Hargeisa", "Burco"],
-        ["Hargeisa", "Gabiley"],
-        ["Hargeisa", "Wajale"],
-        ["Burco", "Erigavo"],
-        ["Burco", "Las anod"]
-      ];
-      
-      // Draw route lines
-      routePairs.forEach(pair => {
-        const from = locations.find(l => l.name === pair[0]);
-        const to = locations.find(l => l.name === pair[1]);
-        
-        if (from && to) {
-          const [x1, y1] = projectToSvg(from.lat, from.lng);
-          const [x2, y2] = projectToSvg(to.lat, to.lng);
-          
-          const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-          line.setAttribute("x1", x1.toString());
-          line.setAttribute("y1", y1.toString());
-          line.setAttribute("x2", x2.toString());
-          line.setAttribute("y2", y2.toString());
-          line.setAttribute("stroke", "#93c5fd");
-          line.setAttribute("stroke-width", "2");
-          line.setAttribute("stroke-dasharray", "4,2");
-          svg.appendChild(line);
-        }
-      });
-      
-      // Add the SVG to the container
-      mapContainer.innerHTML = '';
-      mapContainer.appendChild(svg);
-      
-      // Add CSS for animations
-      const style = document.createElement('style');
-      style.textContent = `
-        @keyframes pulse {
-          0% { r: 5; opacity: 0.6; }
-          50% { r: 15; opacity: 0.2; }
-          100% { r: 5; opacity: 0.6; }
-        }
-        .pulse-animation {
-          animation: pulse 3s infinite;
-        }
-      `;
-      document.head.appendChild(style);
+
+      svg.appendChild(markerGroup);
+    });
+
+    const routePairs = [
+      ["Hargeisa", "Borama"],
+      ["Hargeisa", "Berbera"],
+      ["Hargeisa", "Burco"],
+      ["Hargeisa", "Gabiley"],
+      ["Hargeisa", "Wajale"],
+      ["Burco", "Erigavo"],
+      ["Burco", "Las anod"],
+    ];
+
+    routePairs.forEach((pair) => {
+      const from = locations.find((l) => l.name === pair[0]);
+      const to = locations.find((l) => l.name === pair[1]);
+      if (from && to) {
+        const [x1, y1] = projectToSvg(from.lat, from.lng);
+        const [x2, y2] = projectToSvg(to.lat, to.lng);
+        const line = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "line"
+        );
+        line.setAttribute("x1", x1.toString());
+        line.setAttribute("y1", y1.toString());
+        line.setAttribute("x2", x2.toString());
+        line.setAttribute("y2", y2.toString());
+        line.setAttribute("stroke", "#93c5fd");
+        line.setAttribute("stroke-width", "2");
+        line.setAttribute("stroke-dasharray", "4,2");
+        svg.appendChild(line);
+      }
+    });
+
+    // mapContainer.innerHTML = "";
+    // mapContainer.appendChild(svg);
+    const existingSvg = mapContainer.querySelector("svg");
+    if (existingSvg) {
+      mapContainer.removeChild(existingSvg);
     }
-  }, [mapRef, toast]);
+    mapContainer.appendChild(svg);
+
+    const style = document.createElement("style");
+    style.textContent = `
+      @keyframes pulse {
+        0% { r: 5; opacity: 0.6; }
+        50% { r: 15; opacity: 0.2; }
+        100% { r: 5; opacity: 0.6; }
+      }
+      .pulse-animation {
+        animation: pulse 3s infinite;
+      }
+    `;
+    document.head.appendChild(style);
+
+    setIsMapLoading(false);
+  }, [locations, toast]);
 
   useEffect(() => {
     fetchRoutes();
@@ -513,17 +733,22 @@ const Routes = () => {
             {/* Route Map */}
             <section className="py-12 px-4 bg-gray-50">
               <div className="container mx-auto max-w-6xl">
-                <h2 className="text-2xl font-bold mb-8">Somaliland Route Network</h2>
+                <h2 className="text-2xl font-bold mb-8">
+                  Somaliland Route Network
+                </h2>
                 <div className="bg-white rounded-lg shadow-lg overflow-hidden">
                   <div ref={mapRef} className="w-full h-[400px] relative">
                     {/* SVG Map will be inserted here */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-bus-500"></div>
-                    </div>
+                    {isMapLoading && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-bus-500"></div>
+                      </div>
+                    )}
                   </div>
                   <div className="p-4 bg-gray-50">
                     <p className="text-sm text-muted-foreground text-center">
-                      Click on any city to view available routes from that location
+                      Click on any city to view available routes from that
+                      location
                     </p>
                   </div>
                 </div>
