@@ -16,15 +16,18 @@ const ProtectedRoute = ({ children, allowedRole }: ProtectedRouteProps) => {
 
   useEffect(() => {
     // On initial render or when location changes, double-check auth state
-    // This ensures we maintain the session even on page refreshes
-    const isAuth = checkAuthState();
-    console.log("Protected route auth check:", { isAuth, user, path: location.pathname });
+    const verifyAuth = () => {
+      const isAuth = checkAuthState();
+      console.log("Protected route auth check:", { isAuth, user, path: location.pathname });
+      
+      // Validate role if needed
+      const hasValidRole = allowedRole ? user?.role === allowedRole : true;
+      setHasAccess(isAuth && hasValidRole);
+      setIsChecking(false);
+    };
     
-    // Validate role if needed
-    const hasValidRole = allowedRole ? user?.role === allowedRole : true;
-    setHasAccess(isAuth && hasValidRole);
-    setIsChecking(false);
-  }, [location.pathname]);
+    verifyAuth();
+  }, [location.pathname, checkAuthState]);
 
   if (isChecking) {
     // Show loading spinner while checking auth state
@@ -35,7 +38,7 @@ const ProtectedRoute = ({ children, allowedRole }: ProtectedRouteProps) => {
     );
   }
 
-  if (!isAuthenticated || !hasAccess) {
+  if (!hasAccess) {
     // Save attempted URL for post-login redirect
     const returnUrl = encodeURIComponent(location.pathname + location.search);
     return <Navigate to={`/login?from=${returnUrl}`} replace />;

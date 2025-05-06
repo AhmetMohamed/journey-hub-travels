@@ -7,7 +7,7 @@ interface User {
   lastName: string;
   email: string;
   role: string;
-  avatar?: string; // Added avatar as an optional property
+  avatar?: string;
 }
 
 interface AuthContextType {
