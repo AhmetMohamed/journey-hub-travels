@@ -170,7 +170,7 @@ const Routes = () => {
             description: `View routes from ${location.name}`,
           });
           setSearchTerm(location.name);
-          handleSearch(new Event("submit") as React.FormEvent);
+          handleSearch(new Event("submit") as any);
         });
         
         svg.appendChild(markerGroup);
