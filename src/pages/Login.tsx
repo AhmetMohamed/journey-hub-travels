@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -50,10 +49,10 @@ const Login = () => {
       }
 
       const data = await response.json();
-      
+
       // Log the token for debugging
       console.log("Received token:", data.token);
-      
+
       // Store token and login
       login(data.token, data.user);
 
@@ -137,11 +136,10 @@ const Login = () => {
                 )}
               </Button>
 
-              {/* Demo credentials for testing */}
+              {/* Admin credentials for testing */}
               <div className="text-sm text-gray-500 border rounded p-3 mt-4 bg-gray-50">
                 <p className="font-semibold">Demo Credentials:</p>
-                <p>Admin: admin@example.com / admin123</p>
-                <p>User: user@example.com / user123</p>
+                <p>Admin: admin@gmail.com / 123</p>
               </div>
             </form>
           </CardContent>

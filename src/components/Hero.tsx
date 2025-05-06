@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { MapPin, Calendar, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -57,20 +56,33 @@ const Hero: React.FC = () => {
         <div className="absolute bottom-1/4 right-1/3 w-80 h-80 rounded-full bg-amber-500/20 blur-3xl transform animate-pulse delay-1000"></div>
       </div>
 
-      <div className={`absolute inset-0 bg-bus-800/50 backdrop-blur-sm z-0 transition-opacity duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`}></div>
+      <div
+        className={`absolute inset-0 bg-bus-800/50 backdrop-blur-sm z-0 transition-opacity duration-1000 ${
+          isVisible ? "opacity-100" : "opacity-0"
+        }`}
+      ></div>
 
       <div className="relative z-10 px-4 py-20 md:py-32 max-w-7xl mx-auto w-full">
-        <div className={`text-center mb-12 transition-all duration-1000 ease-out transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+        <div
+          className={`text-center mb-12 transition-all duration-1000 ease-out transform ${
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+          }`}
+        >
           <h1 className="text-4xl md:text-6xl font-bold mb-6 text-gradient-primary">
             Your Journey Begins Here
           </h1>
           <p className="text-xl md:text-2xl max-w-3xl mx-auto text-white/90">
-            Discover affordable and comfortable bus travel across all regions with SahalBus
+            Discover affordable and comfortable bus travel across all regions
+            with SahalBus
           </p>
         </div>
 
         {/* Search Form */}
-        <div className={`bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 max-w-4xl mx-auto transition-all duration-1000 delay-300 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'} border border-white/20`}>
+        <div
+          className={`bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 max-w-4xl mx-auto transition-all duration-1000 delay-300 transform ${
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+          } border border-white/20`}
+        >
           <form onSubmit={handleSearch} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -146,7 +158,11 @@ const Hero: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent className="bg-bus-800 border-white/20 text-white">
                     {[1, 2, 3, 4, 5].map((num) => (
-                      <SelectItem key={num} value={num.toString()} className="focus:bg-white/20 focus:text-white">
+                      <SelectItem
+                        key={num}
+                        value={num.toString()}
+                        className="focus:bg-white/20 focus:text-white"
+                      >
                         {num} {num === 1 ? "Passenger" : "Passengers"}
                       </SelectItem>
                     ))}
@@ -166,17 +182,23 @@ const Hero: React.FC = () => {
             </div>
           </form>
         </div>
-        
+
         {/* Floating badges */}
         <div className="mt-16 flex flex-wrap justify-center gap-4">
           {[
             { text: "24/7 Customer Support", delay: "delay-500" },
-            { text: "500+ Routes Available", delay: "delay-600" },
+            { text: "50+ Routes Available", delay: "delay-600" },
             { text: "100% Safe Travels", delay: "delay-700" },
           ].map((badge, index) => (
-            <div 
+            <div
               key={index}
-              className={`bg-white/10 backdrop-blur-md px-6 py-3 rounded-full border border-white/20 shadow-lg transition-all duration-1000 transform ${badge.delay} ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
+              className={`bg-white/10 backdrop-blur-md px-6 py-3 rounded-full border border-white/20 shadow-lg transition-all duration-1000 transform ${
+                badge.delay
+              } ${
+                isVisible
+                  ? "translate-y-0 opacity-100"
+                  : "translate-y-10 opacity-0"
+              }`}
             >
               <span className="text-white/90">{badge.text}</span>
             </div>
