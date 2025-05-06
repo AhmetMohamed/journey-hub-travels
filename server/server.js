@@ -1,4 +1,3 @@
-
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -19,12 +18,13 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors({
-  origin: process.env.NODE_ENV === "production" 
-    ? process.env.FRONTEND_URL || "*" // Allow any origin by default or use specific URL
-    : "http://localhost:8080",
-  credentials: true
-}));
+// app.use(cors({
+//   origin: process.env.NODE_ENV === "production"
+//     ? process.env.FRONTEND_URL || "*" // Allow any origin by default or use specific URL
+//     : "http://localhost:8080",
+//   credentials: true
+// }));
+app.use(cors());
 app.use(express.json());
 
 // Routes
@@ -42,7 +42,9 @@ app.use("/api/*", (req, res) => {
 });
 
 // MongoDB Connection URL - use environment variable if available
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://sahaltransportbus:sahal2025@cluster0.kpkxz12.mongodb.net/sahal-bus";
+const MONGODB_URI =
+  process.env.MONGODB_URI ||
+  "mongodb+srv://sahaltransportbus:sahal2025@cluster0.kpkxz12.mongodb.net/sahal-bus";
 
 // Connect to MongoDB
 mongoose
