@@ -28,8 +28,10 @@ app.use(
   cors({
     origin: "https://sahal-bus-client.vercel.app",
     methods: ["GET", "POST", "PUT", "DELETE"], // Specify allowed HTTP methods
+    credentials: true,
   })
 );
+app.options("*", cors());
 app.use(express.json());
 
 // Routes
