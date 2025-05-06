@@ -24,7 +24,12 @@ const PORT = process.env.PORT || 3000;
 //     : "http://localhost:8080",
 //   credentials: true
 // }));
-app.use(cors());
+app.use(
+  cors({
+    origin: "sahal-bus-client.vercel.app",
+    methods: ["GET", "POST", "PUT", "DELETE"], // Specify allowed HTTP methods
+  })
+);
 app.use(express.json());
 
 // Routes
