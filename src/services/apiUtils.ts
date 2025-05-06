@@ -1,8 +1,9 @@
+
 import { toast } from "@/components/ui/use-toast";
 
 // API configuration
 export const API_BASE_URL = process.env.NODE_ENV === "production" 
-  ? "https://yourverceldeployment.vercel.app"  // Replace with your actual Vercel domain
+  ? window.location.origin  // This will use the same origin as the frontend in production
   : "http://localhost:3000"; 
 
 // Helper function to handle fetch errors

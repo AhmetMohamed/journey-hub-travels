@@ -21,7 +21,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === "production" 
-    ? "https://yourverceldeployment.vercel.app" // Replace with your Vercel domain
+    ? process.env.FRONTEND_URL || "*" // Allow any origin by default or use specific URL
     : "http://localhost:8080",
   credentials: true
 }));
@@ -36,22 +36,10 @@ app.use("/api/stats", statsRoutes);
 app.use("/api/reports", reportsRoutes);
 app.use("/api/users", userRoutes);
 
-// Serve static files from the React app in production
-if (process.env.NODE_ENV === "production") {
-  // Since we're using Vercel's routing, we don't need to serve static files directly
-  // But we'll handle the API routes not found case
-  app.use("/api/*", (req, res) => {
-    res.status(404).json({ message: "API endpoint not found" });
-  });
-} else {
-  // For local development, serve static files
-  app.use(express.static(path.join(__dirname, "../client/dist")));
-  
-  // Handle React routing for local development
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../client/dist/index.html"));
-  });
-}
+// For Vercel, we won't serve static files directly as that's handled by the vercel.json routing
+app.use("/api/*", (req, res) => {
+  res.status(404).json({ message: "API endpoint not found" });
+});
 
 // MongoDB Connection URL - use environment variable if available
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://sahaltransportbus:sahal2025@cluster0.kpkxz12.mongodb.net/sahal-bus";
