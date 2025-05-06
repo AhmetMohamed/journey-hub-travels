@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
+const serverless = require("serverless-http");
+
 const authRoutes = require("./routes/auth");
 const routeRoutes = require("./routes/routes");
 const scheduleRoutes = require("./routes/schedules");
@@ -62,12 +64,13 @@ mongoose
   .then(() => console.log("Connected to MongoDB at", MONGODB_URI))
   .catch((err) => console.error("Could not connect to MongoDB", err));
 
-// For Vercel, export the Express app as a module
-module.exports = app;
-
 // Only listen on a port if this file is run directly (not when imported by Vercel)
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
 }
+
+// For Vercel, export the Express app as a module
+module.exports = app;
+module.exports.handler = serverless(app);
