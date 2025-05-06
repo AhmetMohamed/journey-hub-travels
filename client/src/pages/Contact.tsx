@@ -61,8 +61,8 @@ const Contact = () => {
               </div>
               <CardTitle className="mb-2">Email Address</CardTitle>
               <CardDescription>
-                <a href="mailto:info@journeyhub.com" className="hover:text-bus-800">info@journeyhub.com</a><br />
-                <a href="mailto:support@journeyhub.com" className="hover:text-bus-800">support@journeyhub.com</a>
+                <a href="mailto:info@journeyhub.com" className="hover:text-bus-800">info@sahal-bus.com</a><br />
+                <a href="mailto:support@journeyhub.com" className="hover:text-bus-800">support@sahal-bus.com</a>
               </CardDescription>
             </CardContent>
           </Card>
