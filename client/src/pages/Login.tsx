@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
 import {
   Card,
   CardContent,
@@ -11,12 +11,12 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { useAuth } from "@/contexts/AuthContext";
+} from "../components/ui/card";
+import { useAuth } from "../contexts/AuthContext";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "../components/ui/use-toast";
 import { Loader } from "lucide-react";
-import { API_BASE_URL } from "@/services/apiUtils";
+import { API_BASE_URL } from "../services/apiUtils";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -33,6 +33,8 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+
+    console.log(API_BASE_URL);
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {

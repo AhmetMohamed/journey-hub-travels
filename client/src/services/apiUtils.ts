@@ -7,7 +7,7 @@ import { toast } from "../components/ui/use-toast";
 //     : "http://localhost:3000";
 export const API_BASE_URL =
   process.env.NODE_ENV === "production"
-    ? process.env.API_BASE_URL // Correct source
+    ? process.env.API_SERVER_BASE_URL // Correct source
     : "http://localhost:3000"; // Local fallback
 
 // Helper function to handle fetch errors
