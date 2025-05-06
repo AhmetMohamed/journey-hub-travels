@@ -1,10 +1,14 @@
 import { toast } from "../components/ui/use-toast";
 
 // API configuration
+// export const API_BASE_URL =
+//   process.env.NODE_ENV === "production"
+//     ? window.location.origin // This will use the same origin as the frontend in production
+//     : "http://localhost:3000";
 export const API_BASE_URL =
   process.env.NODE_ENV === "production"
-    ? window.location.origin // This will use the same origin as the frontend in production
-    : "http://localhost:3000";
+    ? process.env.API_BASE_URL // Correct source
+    : "http://localhost:3000"; // Local fallback
 
 // Helper function to handle fetch errors
 export const handleResponse = async (response: Response) => {
