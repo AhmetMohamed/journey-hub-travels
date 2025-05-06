@@ -26,7 +26,7 @@ const PORT = process.env.PORT || 3000;
 // }));
 app.use(
   cors({
-    origin: "sahal-bus-client.vercel.app",
+    origin: "https://sahal-bus-client.vercel.app",
     methods: ["GET", "POST", "PUT", "DELETE"], // Specify allowed HTTP methods
   })
 );
