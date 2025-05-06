@@ -38,25 +38,25 @@ const Index = () => {
       <Navbar />
       
       <main>
-        <div ref={el => sectionsRef.current[0] = el} 
+        <section ref={el => sectionsRef.current[0] = el} 
              className="opacity-0 transition-all duration-700 ease-out">
           <Hero />
-        </div>
+        </section>
         
-        <div ref={el => sectionsRef.current[1] = el} 
+        <section ref={el => sectionsRef.current[1] = el} 
              className="opacity-0 transition-all duration-700 ease-out delay-100">
           <FeaturedRoutes />
-        </div>
+        </section>
         
-        <div ref={el => sectionsRef.current[2] = el} 
+        <section ref={el => sectionsRef.current[2] = el} 
              className="opacity-0 transition-all duration-700 ease-out delay-200">
           <Features />
-        </div>
+        </section>
         
-        <div ref={el => sectionsRef.current[3] = el} 
+        <section ref={el => sectionsRef.current[3] = el} 
              className="opacity-0 transition-all duration-700 ease-out delay-300">
           <CTA />
-        </div>
+        </section>
       </main>
       
       <Footer />

@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   build: {
-    outDir: "client/dist"
+    outDir: "dist"
   },
   plugins: [
     react(),
