@@ -13,7 +13,7 @@ const About = () => {
         {/* Hero Section */}
         <div className="bg-bus-800 text-white py-16">
           <div className="container mx-auto px-4">
-            <h1 className="text-4xl font-bold mb-4 text-center">About JourneyHub</h1>
+            <h1 className="text-4xl font-bold mb-4 text-center">About SahalBus</h1>
             <p className="text-xl max-w-3xl mx-auto text-center">
               Connecting regions and bringing people together with safe, reliable, and comfortable bus transportation since 2010.
             </p>
