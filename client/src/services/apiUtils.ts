@@ -2,7 +2,7 @@ import { toast } from "../components/ui/use-toast";
 
 // API configuration
 export const API_BASE_URL =
-  process.env.NODE_ENV === "production"
+  process.env.NODE_ENV === "https://sahal-bus.vercel.app"
     ? window.location.origin // This will use the same origin as the frontend in production
     : "http://localhost:3000";
 
