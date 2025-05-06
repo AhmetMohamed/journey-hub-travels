@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, User, LogOut, History } from 'lucide-react';
+import { Menu, X, ChevronDown, User, LogOut, History, Bus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -52,22 +51,10 @@ const Navbar = () => {
           <div className="flex">
             <Link to="/" className="flex-shrink-0 flex items-center">
               <div className="flex items-center">
-                <svg
-                  className="h-8 w-8 text-bus-800"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M19 17h2V5H3v12h2" />
-                  <path d="M14 17H9" />
-                  <circle cx="6.5" cy="17.5" r="2.5" />
-                  <circle cx="16.5" cy="17.5" r="2.5" />
-                  <path d="M3 9h18" />
-                </svg>
-                <span className="ml-2 text-xl font-bold text-bus-800">JourneyHub</span>
+                <div className="rounded-full bg-bus-800 p-1.5">
+                  <Bus className="h-6 w-6 text-white" />
+                </div>
+                <span className="ml-2 text-xl font-bold text-bus-800">SahalBus</span>
               </div>
             </Link>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
